@@ -2,8 +2,6 @@ package chillerAD04;
 
 use IO::File;
 use Net::SNMP;
-use HTTP::Request;
-use LWP::UserAgent;
 use POSIX qw(strftime);
 
 #use Data::Dumper qw(Dumper);
@@ -38,7 +36,6 @@ $description = {
 $OIDdigital = "1.";
 $OIDanalog  = "2.";
 $OIDbase    = "1.3.6.1.4.1.9839.2.";
-#$webgateIP  = "10.28.243.234";
 $FS = "\t";  # Field separator for the log file output.
 
 
@@ -57,11 +54,11 @@ sub New
     my $class = ref($proto) || $proto;
 
 	my $webgateIP      = $_[0];
-	my $webgate_offset = $_[1];  # 6 = chiller01, 7 = chiller02, 8 = chiller03.
+	my $webgate_device = $_[1];  # 6 = chiller01, 7 = chiller02, 8 = chiller03.
 	my $label          = $_[2];
 	
     my $self = {
-      'offset'      => $webgate_offset, 
+      'offset'      => $webgate_device, 
       'IP'          => $webgateIP,
       'label'       => $label,
       'description' => $description,
@@ -87,7 +84,7 @@ sub New
 	    my $result = $session->get_request( $oid )
 	        or die ("SNMP service $oid is not available on this SNMP server.");
 	    $self->{'digital'}{$mykey} = $result->{$oid};
-    	print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
+    	# print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
     }
 
     foreach my $mykey ( sort keys %{ $description->{'analog'} } ) { 
@@ -95,7 +92,7 @@ sub New
 	    my $result = $session->get_request( $oid ) 
 	        or die ("SNMP service $oid is not available on this SNMP server.");
 	    $self->{'analog'}{$mykey} = $result->{$oid} / 10.;
-    	print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
+    	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
     }
     
     # Close the connection
