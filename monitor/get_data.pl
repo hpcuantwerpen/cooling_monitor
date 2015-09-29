@@ -126,8 +126,8 @@ if ( ! -d $webdir ) {
 #
 
 # Routine to fetch data from chiller01/chiller02
-$chiller01data = chillerAD04->New( 1, "chiller01" );
-$chiller02data = chillerAD04->New( 2, "chiller02" );
+$chiller01data = chillerAD04->New( "10.28.243.234", 6, "chiller01" );
+$chiller02data = chillerAD04->New( "10.28.243.234", 7, "chiller02" );
 
 # Routine to fetch data from Chiller04
 $chiller04data = chillerAD14->New( "10.28.233.52", "chiller04" );
