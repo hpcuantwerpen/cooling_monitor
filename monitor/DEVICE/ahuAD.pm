@@ -1,8 +1,7 @@
 package ahuAD;
 
 use IO::File;
-use HTTP::Request;
-use LWP::UserAgent;
+use Net::SNMP;
 use POSIX qw(strftime);
 
 #use Data::Dumper qw(Dumper);
@@ -26,17 +25,17 @@ $description = {
 
 $OIDdigital = "1.";
 $OIDanalog  = "2.";
+$OIDbase    = "1.3.6.1.4.1.9839.2.";
 $FS = "\t";  # Field separator for the log file output.
 
-$webcache = {
-    'epoch'   => 0,
-    'webdata' => []
-  };
 
 #
 # Constructor.
-# - The first argument is the class, chillerAD04, or the object
-# - The second argument is either 1 or 2, for chiller01 and chiller02.
+# Arguments:
+# 0: the class, ahuAD, or the object (hidden argument)
+# 1: IP number of the WebGATE device
+# 2: Device number of the device to monitor. 1 for ahu01, 2 for ahu02 etc.
+# 3: Label of the device to monitor, used, e.g., in alarm strings.
 #
 sub New
 {
@@ -44,78 +43,55 @@ sub New
     my $proto = shift;
     my $class = ref($proto) || $proto;
 
-	my $ahu_offset = $_[0] - 1;
-	my $label      = $_[1];
-
-    #
-    # Re-read the data if needed.
-    #
-    if ( time() - $webcache->{epoch} > 15 ) {
-
-        # Store the time of the request.
-        $webcache->{epoch}   = time();
-
-        my $req = HTTP::Request->new( GET => 'http://10.28.243.234/administrator/body_airedale_ahu_s.html' );
-        $req->authorization_basic('airegate', 'airegate');
-
-        my $ua = LWP::UserAgent->new;
-        my @webpage = split /\r\n/, $ua->request($req)->decoded_content;
-
-        # First set of data: All variables except "Set point" and "Chiller enabled"
-        # - Select the lines with actual data.
-        @dataset = grep( /P STYLE=\"color: rgb\(.*SPAN STYLE/, @webpage );
-        # - Omit HTML and unnecessary spaces.
-        map { s/<[^>]*>//g ; s/&nbsp;//g ; s/ *//g ; s /\r//g ; $_ } @dataset;
-        
-        # Second set of data: Temperature set points
-        # - Select the lines with actual data.
-        @datalines = grep( /var\(\d,2,12,0,99\)/, @webpage );
-        # - Extract the data.
-        foreach (@datalines) {
-        	s/Unit OFF-LINE/NaN/;
-        	/.*VALUE=\"([0-9.Na]+)\".*/;
-        	push @dataset, $1;
-        }
-
-        # Third set of data: Unit enabled
-        # - Select the lines with actual data.
-        @datalines = grep( /var\(\d,1,114,0,1\)/, @webpage );
-        # - Extract the data.
-        foreach (@datalines) {
-        	s/Unit OFF-LINE/NaN/;
-        	/.*VALUE=\"([01Na]+)\".*/;
-        	push @dataset, $1;
-        }
-                
-        # Store the data in the cache
-        $webcache->{webdata} = \@dataset;
-
-    }
-
-    #
-    # Now extract the data from webpage and store in the structure for further processing.
-    #
-
+	my $webgateIP      = $_[0];
+	my $webgate_device = $_[1];  # 1 = ahu01, 2 = ahu02, ....
+	my $label          = $_[2];
+	
     my $self = {
-      'offset'      => $ahu_offset, 
+      'offset'      => $webgate_device, 
+      'IP'          => $webgateIP,
       'label'       => $label,
       'description' => $description,
-      'timestamp'   => strftime( "%y%m%d-%H%M", localtime( $webcache->{epoch} ) ), 
-      'digital'     => {
-          21 => $webcache->{webdata}[20+$ahu_offset],
-          26 => $webcache->{webdata}[30+$ahu_offset],
-          27 => $webcache->{webdata}[25+$ahu_offset],
-         114 => $webcache->{webdata}[40+$ahu_offset]
-         },
-      'analog'      => {
-          1 => $webcache->{webdata}[5 +$ahu_offset],
-          4 => $webcache->{webdata}[   $ahu_offset],
-          5 => $webcache->{webdata}[10+$ahu_offset],
-         12 => $webcache->{webdata}[35+$ahu_offset],
-         35 => $webcache->{webdata}[15+$ahu_offset]
-        }
+      'digital'     => { },
+      'analog'      => { }
       };
 
+	# Open the SNMP-session
+	my ($session, $error) = Net::SNMP->session(
+             -hostname  => $webgateIP,
+             -community => 'public',
+             -port      => 161,
+             -timeout   => 1,
+             -retries   => 3,
+			 -debug		=> 0x0,
+			 -version	=> 2,
+             -translate => [-timeticks => 0x0] 
+	         );
+
+    # Read the keys, first the digital ones then the analog ones.
+    foreach my $mykey ( sort keys %{ $description->{'digital'} } ) { 
+	    my $oid = $OIDbase.$webgate_device.".".$OIDdigital.$mykey.".0";
+	    my $result = $session->get_request( $oid )
+	        or die ("SNMP service $oid is not available on this SNMP server.");
+	    $self->{'digital'}{$mykey} = $result->{$oid};
+    	# print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
+    }
+
+    foreach my $mykey ( sort keys %{ $description->{'analog'} } ) { 
+    	my $oid = $OIDbase.$webgate_device.".".$OIDanalog.$mykey.".0";
+	    my $result = $session->get_request( $oid ) 
+	        or die ("SNMP service $oid is not available on this SNMP server.");
+	    $self->{'analog'}{$mykey} = $result->{$oid} / 10.;
+    	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
+    }
+    
+    # Close the connection
+    $session->close;
+
+    # Add the timestamp field
+    $self->{'timestamp'} = strftime( "%y%m%d-%H%M", localtime );
+
+    # Finalise the object creation
     bless( $self, $class );
     return $self
 	

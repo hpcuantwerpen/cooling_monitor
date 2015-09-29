@@ -137,11 +137,11 @@ $cooler01data = coolerAD->New( "10.28.233.50", "cooler01" );
 $cooler02data = coolerAD->New( "10.28.233.51", "cooler02" );
 
 # Routine to fetch the data from the Air Handling Units in the compute room
-$ahu01data = ahuAD->New( 1, "ahu01" );
-$ahu02data = ahuAD->New( 2, "ahu02" );
-$ahu03data = ahuAD->New( 3, "ahu03" );
-$ahu04data = ahuAD->New( 4, "ahu04" );
-$ahu05data = ahuAD->New( 5, "ahu05" );
+$ahu01data = ahuAD->New( "10.28.243.234", 1, "ahu01" );
+$ahu02data = ahuAD->New( "10.28.243.234", 2, "ahu02" );
+$ahu03data = ahuAD->New( "10.28.243.234", 3, "ahu03" );
+$ahu04data = ahuAD->New( "10.28.243.234", 4, "ahu04" );
+$ahu05data = ahuAD->New( "10.28.243.234", 5, "ahu05" );
 
 #
 # Create the log files for the graphs.
