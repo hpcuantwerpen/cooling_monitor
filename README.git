@@ -1,0 +1,14 @@
+REMARK
+======
+
+Due to a bug in Eclipse PTPT for synchronized projects, we had no other
+option than to use this awkward setup for the project. It would be logical to
+build the git repository in the monitor subdirectory, but this does not work
+well with eclipse due to a bug in the PTP which has been present for a few 
+releases already and is not yet solved in the initial Mars release (in fact,
+it is bug 431257, submitted in March 2014). Synching of a subfolder
+(and subfolders therein) fails if that subfolder contains a git repository
+structure (the .git directory), even when filters are used to ignore the
+repository. Hence we had no other choice than to build the repository in
+the Eclispe project root folder which also contains other folders that we
+do not want to put through git version control.

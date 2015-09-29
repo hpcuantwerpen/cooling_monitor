@@ -1,0 +1,402 @@
+<html>
+<head>
+<title>Cooling infrastructure status</title>
+<meta http-equiv="refresh" content="300">
+<style>
+body { font-size: 11pt; font-family: Arial, Helvetica, sans-serif }
+
+button { font-size: 13pt ; font-weight: bold ; width: 90pt ; text-align: center ; }
+button.StatusButtonNormal      { background-color: LawnGreen ; }
+button.StatusButtonCritical    { background-color: #FF2020 ; }
+button.StatusButtonNonCritical { background-color: Yellow ; }
+button.StatusButtonOff         { background-color: SkyBlue ; }
+
+table.DataTable     { border-spacing: 0 ; border-collapse: collapse; }
+.DataTable th       { text-align: center ; background-color: LightGrey ; padding: 3px 2px ; border : solid black 1px ; }
+.DataTable th.first  { text-align: left ; padding: 3px 2px 3px 5px ; }
+.DataTable td       { text-align: right ; padding: 1px 2px ; border : none ; }
+.DataTable td.data  { text-align: right ; padding: 1px 2px ; 
+                      border : solid black 1px ; }
+.DataTable td.label { text-align: left ; padding: 1px 2px 1px 5px ; background-color: LightGrey ; 
+                      border : solid black 1px ; }
+.DataTable td.title { text-align: center ; font-size: 14pt ; font-weight: bold  ; padding: 4px 2ps ;
+                      border : solid black 1px ; }
+.DataTable td.StatusField { text-align: center ; 
+                            border: solid black 1px ;  }
+.DataTable td.StatusMessages { text-align: left ; 
+                               border: solid black 1px ;  }
+.DataTable span.ConsoleMssgCritical    { color: Red ; }
+.DataTable span.ConsoleMssgNonCritical { color: Orange ; }
+</style>
+</head>
+<body>
+<h1>Cooling infrastructure status</h1>
+
+<table class="DataTable">
+  <tr>
+    <th class="first">Timestamp</th>
+    <th>chiller 1</th>
+    <th>chiller 2</th>
+    <th>chiller 4</th>
+    <th></th>
+    <th>cooler 1</th>
+    <th>cooler 2</th>
+    <th></th>
+    <th>AHU 3</th>
+    <th>AHU 4</th>
+    <th>AHU 5</th>
+  </tr>
+  <tr>
+    <td class="label">%timestamp%</td>
+    <td class="StatusField">%status(1)%</td>
+    <td class="StatusField">%status(2)%</td>
+    <td class="StatusField">%status(4)%</td>
+    <td class="label"></td>
+    <td class="StatusField">%status(11)%</td>
+    <td class="StatusField">%status(12)%</td>
+    <td class="label"></td>
+    <td class="StatusField">%status(23)%</td>
+    <td class="StatusField">%status(24)%</td>
+    <td class="StatusField">%status(25)%</td>  
+  </tr>
+  <tr>
+    <td colspan="11" class="StatusMessages">
+      %AlarmMssgs%
+    </td>
+  <tr>
+    <td colspan="11" class="title"><strong>Environment</strong></td>
+  </tr>
+  <tr>
+    <td class="label">Supply water T</td>
+    <td class="data">%avar(1,5)%</td>
+    <td class="data">%avar(2,5)%</td>
+    <td class="data">%avar(4,21)%</td>
+    <td class="label"></td>
+    <td class="data">%avar(11,33)%</td>
+    <td class="data">%avar(12,33)%</td>
+    <td class="label"></td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+  </tr>
+  <tr>
+    <td class="label">Return water T</td>
+    <td class="data">%avar(1,4)%</td>
+    <td class="data">%avar(2,4)%</td>
+    <td class="data">%avar(4,20)%</td>
+    <td class="label"></td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="label"></td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+  </tr>
+  <tr>
+    <td class="label">Flow rate</td>
+    <td class="data">%avar(1,122)%</td>
+    <td class="data">%avar(2,122)%</td>
+    <td class="data">%avar(4,54)%</td>
+    <td class="label"></td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="label"></td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+  </tr>
+  <tr>
+    <td class="label">Supply air T</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="label"></td>
+    <td class="data">%avar(11,36)%</td>
+    <td class="data">%avar(12,36)%</td>
+    <td class="label"></td>
+    <td class="data">%avar(23,5)%</td>
+    <td class="data">%avar(24,5)%</td>
+    <td class="data">%avar(25,5)%</td>
+  </tr>
+  <tr>
+    <td class="label">Relative humidity</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="label"></td>
+    <td class="data">%avar(11,34)%</td>
+    <td class="data">%avar(12,34)%</td>
+    <td class="label"></td>
+    <td class="data">%avar(23,1)%</td>
+    <td class="data">%avar(24,1)%</td>
+    <td class="data">%avar(25,1)%</td>
+  </tr>
+  <tr>
+    <td class="label">Return air T</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="label"></td>
+    <td class="data">%avar(11,35)%</td>
+    <td class="data">%avar(12,35)%</td>
+    <td class="label"></td>
+    <td class="data">%avar(23,4)%</td>
+    <td class="data">%avar(24,4)%</td>
+    <td class="data">%avar(25,4)%</td>
+  </tr>
+  <tr>
+    <td class="label">Set point</td>
+    <td class="data">%avar(1,13)%</td>
+    <td class="data">%avar(2,13)%</td>
+    <td class="data">%avar(4,23)%</td>
+    <td class="label"></td>
+    <td class="data">%avar(11,48)%</td>
+    <td class="data">%avar(12,48)%</td>
+    <td class="label"></td>
+    <td class="data">%avar(23,12)%</td>
+    <td class="data">%avar(24,12)%</td>
+    <td class="data">%avar(25,12)%</td>
+  </tr>
+  <tr>
+    <td class="label">Outside temperature</td>
+    <td class="data">%avar(1,17)%</td>
+    <td class="data">%avar(2,17)%</td>
+    <td class="data">%avar(4,19)%</td>
+    <td class="label"></td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="label"></td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+  </tr>
+  <tr>
+    <td colspan="11" class="title"><strong>Specific parameters</strong></td>
+  </tr>
+  <tr>
+    <td class="label">Circ 1 liquid pressure</td>
+    <td class="data">%avar(1,1)%</td>
+    <td class="data">%avar(2,1)%</td>
+    <td class="data">%avar(4,24)%</td>
+    <td class="label">Aisle Differential Pressure</td>
+    <td class="data">%avar(11,39)%&nbsp;Pa</td>
+    <td class="data">%avar(12,39)%&nbsp;Pa</td>
+    <td class="label">Cooling 0-10vdc</td>
+    <td class="data">%avar(23,35)%</td>
+    <td class="data">%avar(24,35)%</td>
+    <td class="data">%avar(25,35)%</td>
+  </tr>
+  <tr>
+    <td class="label">Circ 1 suction pressure</td>
+    <td class="data">%avar(1,11)%</td>
+    <td class="data">%avar(2,11)%</td>
+    <td class="data">%avar(4,40)%</td>
+    <td class="label">Evaporator Fan Speed</td>
+    <td class="data">%avar(11,2)%&nbsp;%</td>
+    <td class="data">%avar(12,2)%&nbsp;%</td>
+    <td class="label">Fan Operating</td>
+    <td class="data">%dvar(23,21)%</td>
+    <td class="data">%dvar(24,21)%</td>
+    <td class="data">%dvar(25,21)%</td>
+  </tr>
+  <tr>
+    <td class="label">Circ 1 suction temperature</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">%avar(4,38)%</td>
+    <td class="label">CW Valve Position</td>
+    <td class="data">%avar(11,44)%&nbsp;%</td>
+    <td class="data">%avar(12,44)%&nbsp;%</td>
+    <tdß></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Circ 1 superheat</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">%avar(4,42)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+   <tr>
+    <td class="label">Circ 2 liquid pressure</td>
+    <td class="data">%avar(1,2)%</td>
+    <td class="data">%avar(2,2)%</td>
+    <td class="data">%avar(4,25)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Circ 2 suction pressure</td>
+    <td class="data">%avar(1,12)%</td>
+    <td class="data">%avar(2,12)%</td>
+    <td class="data">%avar(4,41)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Circ 2 suction temperature</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">%avar(4,39)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Circ 2 superheat</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">%avar(4,43)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Evaporator Water Inlet Temperature</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">%avar(4,30)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Head Pressure Control</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">%avar(4,36)%&nbsp;%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Free Cooling Valve Position</td>
+    <td class="data">/</td>
+    <td class="data">/</td>
+    <td class="data">%avar(4,34)%&nbsp;%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Compressor 1 on/off</td>
+    <td class="data">%dvar(1,15)%</td>
+    <td class="data">%dvar(2,15)%</td>
+    <td class="data">%dvar(4,35)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Compressor 2 on/off</td>
+    <td class="data">%dvar(1,16)%</td>
+    <td class="data">%dvar(2,16)%</td>
+    <td class="data">%dvar(4,37)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Compressor 3 on/off</td>
+    <td class="data">%dvar(1,17)%</td>
+    <td class="data">%dvar(2,17)%</td>
+    <td class="data">%dvar(4,39)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Compressor 4 on/off</td>
+    <td class="data">%dvar(1,18)%</td>
+    <td class="data">%dvar(2,18)%</td>
+    <td class="data">%dvar(4,41)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Pump 1 on/off</td>
+    <td class="data">%dvar(1,21)%</td>
+    <td class="data">%dvar(2,21)%</td>
+    <td class="data">%dvar(4,29)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td class="label">Pump 2 on/off</td>
+    <td class="data">%dvar(1,22)%</td>
+    <td class="data">%dvar(2,22)%</td>
+    <td class="data">%dvar(4,31)%</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+
+
+
+</body>
+</html>

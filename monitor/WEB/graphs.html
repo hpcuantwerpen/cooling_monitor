@@ -1,0 +1,141 @@
+<html>
+
+<head>
+
+  <title>AHU monitoring</title>
+  
+  <style>
+  button     { font-size: 14pt ; font-weight: bold ; width: 60pt ; text-align: center ; }
+  button.on  { background-color: LawnGreen }
+  button.off { background-color: SkyBlue }
+  div.buttonbar { position: absolute ; top: 0 ; left: 0 ; margin: 4pt ; }
+  div.graph-container { position: relative ; border: 1pt solid black ; margin-bottom: 20pt ;}
+  </style>
+
+  <script>
+  function switchGraph( obj_id, change_to ) {
+    document.getElementById( "button-"+obj_id+"-7d"   ).className = "off";
+    document.getElementById( "button-"+obj_id+"-365d" ).className = "off";
+    document.getElementById( "button-"+obj_id+"-all"  ).className = "off";
+    document.getElementById( "button-"+obj_id+"-"+change_to ).className = "on";
+    myobj = document.getElementById( obj_id );
+    myobj.style.visibility = 'hidden';  // Hide-and-show works around a bug in Safari and 
+                                        // makes sure the object is repainted.
+    myobj.data = myobj.data.replace( /(-7d|-365d|-all)\.svg/, "-" + change_to + ".svg" );
+    myobj.style.visibility = 'visible';
+  } 
+  </script>
+
+  <script>
+  function generateGraph( graph_name ) {
+    html_template = 
+      "<div id=\"div-graphname\" class=\"graph-container\">\n" +   
+      "  <div class=\"buttonbar\">" +
+      "    <button onclick=\"switchGraph('graphname','7d')\"   id=\"button-graphname-7d\"   class=\"on\" >7d</button>\n" +
+      "    <button onclick=\"switchGraph('graphname','365d')\" id=\"button-graphname-365d\" class=\"off\">365d</button>\n" + 
+      "    <button onclick=\"switchGraph('graphname','all')\"  id=\"button-graphname-all\"  class=\"off\">all</button>\n" + 
+      "  </div>" +
+      "  <div class=\"graph\">" +
+      "    <object type=\"image/svg+xml\" data=\"graphname-7d.svg\" id=\"graphname\">Browser does not support SVG</object>" +
+      "  </div>" +
+      "</div>\n";
+    document.write( html_template.replace( /graphname/g, graph_name ) );
+  }
+  </script>
+
+</head>
+
+<body style="background: white; font-family: verdana;">
+
+<ul>
+<li><a href="#chiller01">Chiller 01 monitoring</a></li>
+<li><a href="#chiller02">Chiller 02 monitoring</a></li>
+<li><a href="#chiller04">Chiller 04 monitoring</a></li>
+<li><a href="#all-chillers">Chillers compared</a></li>
+<li><a href="#coolers">Coolers</a></li>
+<li><a href="#AHU">Air Handling Units</a></li>
+<li><a href="#browser-bugs">Browser bugs</a></li>
+</ul>
+
+<!-- StartDevelopment -->
+<h1>Development graph</h1>
+
+<div id="div-ch01-temp" class="graph-container">
+  <div class="buttonbar">
+    <button onclick="switchGraph('ch01-temp','7d')"   id="button-ch01-temp-7d"   class="on" >7d</button>
+    <button onclick="switchGraph('ch01-temp','365d')" id="button-ch01-temp-365d" class="off">365d</button>
+    <button onclick="switchGraph('ch01-temp','all')"  id="button-ch01-temp-all"  class="off">all</button>
+  </div>
+  <div class="graph">
+    <object type="image/svg+xml" data="chiller01-temperatures-7d.svg" id="ch01-temp">Browser does not support SVG</object>
+  </div>
+</div>
+<!--  EndDevelopment -->
+
+
+<h1><a name="chiller01"></a>Chiller 01 monitoring</h1>
+
+<script>generateGraph("chiller01-temperatures")</script>
+<script>generateGraph("chiller01-pressures")</script>
+<script>generateGraph("chiller01-pressure-raise")</script>
+
+<h1><a name="chiller02"></a>Chiller 02 monitoring</h1>
+
+<script>generateGraph("chiller02-temperatures")</script>
+<script>generateGraph("chiller02-pressures")</script>
+<script>generateGraph("chiller02-pressure-raise")</script>
+
+<h1><a name="chiller04"></a>Chiller 04 monitoring</h1>
+
+<script>generateGraph("chiller04-temperatures")</script>
+<script>generateGraph("chiller04-pressures")</script>
+<script>generateGraph("chiller04-pressure-raise")</script>
+<script>generateGraph("chiller04-suction-temp")</script>
+<script>generateGraph("chiller04-superheat")</script>
+
+<h1><a name="all-chillers"></a>Chillers compared</h1>
+
+<script>generateGraph("chillers-supply-temp")</script>
+
+
+<h1><a name="coolers"></a>Coolers</h1>
+
+<a name="cooloer01"></a><script>generateGraph("cooler01")</script>
+<a name="cooloer02"></a><script>generateGraph("cooler02")</script>
+
+<h1><a name="AHU"></a>Air Handling Units</h1>
+
+<script>generateGraph("ahu-return-hum")</script>
+<script>generateGraph("ahu-return-temp")</script>
+<script>generateGraph("ahu-supply-temp")</script>
+
+
+<h1><a name="browser-bugs"></a>Browser bugs</h1>
+
+<p>The javascript on this page does not yet properly deal with the following browser 
+bugs:</p>
+<ul>
+  <li>Firefox
+    <ul>
+      <li>When switching to a different graph, the graph not always loads properly<br/>
+      <strong>Workaround:</strong>: No real workaround, keep clicking and sooner or later
+      the graph will load.
+      </li>
+    </ul>
+  </li>
+  <li>Google Chrome
+    <ul>
+      <li>The Javascript code hidden in the SVG-plots is not properly initialised when 
+      loading the page. As a consequence, the mouse features don't work.<br/>
+      <strong>Workaround:</strong>: Click on the button to select the proper figure, and
+      the Javascript will be initialised correctly.
+      </li>
+    </ul>
+  </li>
+</ul>
+
+
+</body>
+
+</html>
+
