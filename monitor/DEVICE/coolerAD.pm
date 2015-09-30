@@ -16,14 +16,14 @@ $description = {
     60 => { info =>  'low supply temperature ',  type => 'CriticalAlarm' }
     } ,
   'analog' => {
-     2 => { info => 'evaporator fan speed ',        max => '' },
-    33 => { info => 'inlet water temperature ',     max => '' },
-    34 => { info => 'return air humidity ',         max => '' },
-    35 => { info => 'return air temperature ',      max => '' },
-    36 => { info => 'supply air temperature ',      max => '' },
-    39 => { info => 'aisle differential pressure ', max => '' },
-    44 => { info => 'CW valve position ',           max => '' },
-    48 => { info => 'Temperature set point',        max => '' }
+     2 => { info => 'evaporator fan speed ',        unit => '%',   remark => '' },
+    33 => { info => 'inlet water temperature ',     unit => 'ºC',  remark => '' },
+    34 => { info => 'return air humidity ',         unit => '%RN', remark => '' },
+    35 => { info => 'return air temperature ',      unit => 'ºC',  remark => '' },
+    36 => { info => 'supply air temperature ',      unit => 'ºC',  remark => '' },
+    39 => { info => 'aisle differential pressure ', unit => 'Pa',  remark => '' },
+    44 => { info => 'CW valve position ',           unit => '%',   remark => '' },
+    48 => { info => 'Temperature set point',        unit => 'ºC',  remark => '' }
     } 
   };
 
