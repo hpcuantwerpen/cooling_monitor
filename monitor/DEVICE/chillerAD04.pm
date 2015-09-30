@@ -223,7 +223,7 @@ sub AVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	return $self->{'analog'}{$var} ;
+	return ( $self->{'analog'}{$var}, '', '' );
 	
 }
 
@@ -234,7 +234,7 @@ sub DVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	return $self->{'digital'}{$var} ;
+	return ( $self->{'digital'}{$var}, '', '' );
 	
 }
 

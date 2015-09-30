@@ -243,12 +243,12 @@ while ($line = <$webtemplate>) {
 	# Note that for simplicity we assume that the HTML contains only one
 	# %status%, %avar% or %dvar% command per line.
 	if ( $line =~ /.*\%avar\((\d+),(\d+)\)\%.*/ ) {
-		$replace = $devices{$1}->AVar( $2 );
+		($replace, $units, $remark) = $devices{$1}->AVar( $2 );
 		$line =~ s/(.*)\%avar\(\d+,\d+\)\%(.*)/$1$replace$2/;
 		push @outputpage, $line;
 	}
 	elsif ( $line =~ /.*\%dvar\((\d+),(\d+)\)\%.*/ ) {
-		$replace = $devices{$1}->DVar( $2 );
+		($replace, $units, $remark) = $devices{$1}->DVar( $2 );
 		$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
 		push @outputpage, $line;
 	}
