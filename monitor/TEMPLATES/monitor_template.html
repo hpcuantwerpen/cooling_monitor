@@ -16,6 +16,7 @@ table.DataTable              { border-spacing: 0 ; border-collapse: collapse; }
 .DataTable th                { text-align: center ; background-color: LightGrey ; padding: 3px 2px ; border : solid black 1px ; }
 .DataTable th.first          { text-align: left ; padding: 3px 2px 3px 5px ; }
 .DataTable td                { text-align: right ; padding: 1px 2px ; border : none ; }
+.DataTable td.top            { vertical-align: top ; }
 .DataTable td.data           { text-align: right ; padding: 1px 2px ; 
                                border : solid black 1px ; }
 .DataTable td.label          { text-align: left ; padding: 1px 2px 1px 5px ; background-color: LightGrey ; 
@@ -60,17 +61,17 @@ td.dataRemark:hover div.dataRemark span.dataRemark { visibility: visible ; opaci
     <th>AHU 5</th>
   </tr>
   <tr>
-    <td class="label">%timestamp%</td>
-    <td class="StatusField">%status(1)%</td>
-    <td class="StatusField">%status(2)%</td>
-    <td class="StatusField">%status(4)%</td>
+    <td class="label top">%timestamp%</td>
+    <td class="StatusField top">%status(1)%</td>
+    <td class="StatusField top">%status(2)%</td>
+    <td class="StatusField top">%status(4)%</td>
     <td class="label"></td>
-    <td class="StatusField">%status(11)%</td>
-    <td class="StatusField">%status(12)%</td>
+    <td class="StatusField top">%status(11)%</td>
+    <td class="StatusField top">%status(12)%</td>
     <td class="label"></td>
-    <td class="StatusField">%status(23)%</td>
-    <td class="StatusField">%status(24)%</td>
-    <td class="StatusField">%status(25)%</td>  
+    <td class="StatusField top">%status(23)%</td>
+    <td class="StatusField top">%status(24)%</td>
+    <td class="StatusField top">%status(25)%</td>  
   </tr>
   <tr>
     <td colspan="11" class="StatusMessages">

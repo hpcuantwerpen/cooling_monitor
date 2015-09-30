@@ -145,12 +145,56 @@ $description = {
     110 => { info => 'change cooling setpoint by supervisor',  unit => 'ºC',  remark => '' },
     111 => { info => 'change second setpoint by supervisor',   unit => 'ºC',  remark => '' },
     112 => { info => 'change cooling band by supervisor',      unit => 'ºC',  remark => 'Value from 4.0 - 8.0' }
+    },
+  'integer' => {
+     1 => { info => 'current hour',                                   unit => 'h',   remark => '' },
+     4 => { info => 'current minute',                                 unit => 'm',   renark => '' },
+     7 => { info => 'current day',                                    unit => '',    remark => '' },
+    10 => { info => 'current month',                                  unit => '',    remark => '' },
+    13 => { info => 'current year',                                   unit => '',    remark => '' },
+    16 => { info => 'current day of week',                            unit => '',    remark => '1 - 7,Monday = 1' },
+  	19 => { info => 'current operating state of unit',                unit => '',    remark => '0 = Unit On; 1 = Off by Alarms, 2 = Off by Supervisory, 3 = Off by Time zones, 4 = Off by Digital Input, 5 = Off by Keyboard, 6 = Manual Procedure, 7 = Unit Standby' },
+  	20 => { info => 'total system hours run high',                    unit => 'h',   remark => '' },
+  	21 => { info => 'total system hours run low',                     unit => 'h',   remark => '' },
+  	22 => { info => 'total hours compressor 1 run high',              unit => 'h',   remark => '' },
+  	23 => { info => 'total hours compressor 1 run low',               unit => 'h',   remark => '' },
+  	24 => { info => 'total hours compressor 2 run high',              unit => 'h',   remark => '' },
+  	25 => { info => 'total hours compressor 2 run low',               unit => 'h',   remark => '' },
+  	26 => { info => 'total hours compressor 3 run high',              unit => 'h',   remark => '' },
+  	27 => { info => 'total hours compressor 3 run low',               unit => 'h',   remark => '' },
+  	28 => { info => 'total hours compressor 4 run high',              unit => 'h',   remark => '' },
+  	29 => { info => 'total hours compressor 4 run low',               unit => 'h',   remark => '' },
+   	34 => { info => 'freecoling hours run high',                      unit => 'h',   remark => '' },
+   	35 => { info => 'freecoling hours run low',                       unit => 'h',   remark => '' },
+   	36 => { info => 'freecoling and dx hours run high',               unit => 'h',   remark => '' },
+   	37 => { info => 'freecoling and dx hours run low',                unit => 'h',   remark => '' },
+   	38 => { info => 'pump 1 run hours - high component',              unit => 'h',   remark => '' },
+   	39 => { info => 'pump 1 run hours - low component',               unit => 'h',   remark => '' },
+   	40 => { info => 'pump 2 run hours - high component',              unit => 'h',   remark => '' },
+   	41 => { info => 'pump 2 run hours - low component',               unit => 'h',   remark => '' },
+   	42 => { info => 'position of EEV 1',                              unit => '',    remark => 'Step positions of the Electronic Expansion Valve' },
+   	43 => { info => 'position of EEV 2',                              unit => '',    remark => 'Step positions of the Electronic Expansion Valve' },
+   	44 => { info => 'oil preheat coutnd down timer after power fail', unit => 'm',   remark => '' },
+   	45 => { info => 'required stages fron teh sequencer',             unit => '',    remark => '' },
+   	46 => { info => 'anti-freeze high ounter',                        unit => 'h',   remark => '' },
+   	47 => { info => 'anti-freeze low ounter',                         unit => 'h',   remark => '' },
+   	48 => { info => 'low supply temperature limiting high counter',   unit => 'm',   remark => '' },
+   	49 => { info => 'low supply temperature limiting low counter',    unit => 'm',   remark => '' },
+   	50 => { info => 'unit power restart high counter',                unit => 'h',   remark => '' },
+   	51 => { info => 'unit power restart low counter',                 unit => 'h',   remark => '' },
+   	52 => { info => 'number of available comperssor stages on unit',  unit => ''.    remark => '' },
+   	52 => { info => 'number of active comperssor stages on unit',     unit => ''.    remark => '' },
+   	56 => { info => 'water flow - high component',                    unit => 'l/s', remark => '' },
+   	57 => { info => 'water flow - low component',                     unit => 'l/s', remark => '' },
+   	58 => { info => 'water flow',                                     unit => 'l/s', remark => '' },
+   	80 => { info => 'transmission test variable',                     unit => '',    remark => 'Should be 4648' }
     } 
   };
 
 $OIDbase = "1.3.6.1.4.1.9839.2.1.";
 $OIDdigital = "1.";
 $OIDanalog  = "2.";
+$OIDinteger = "3.";
 $FS = "\t";  # Field separator for the log file output.
 
 
@@ -174,7 +218,8 @@ sub New
       'label'       => $label,
       'description' => $description,
       'digital'     => { },
-      'analog'      => { }
+      'analog'      => { },
+      'integer'     => { }
       };
 
 	# Open the SNMP-session
@@ -204,6 +249,14 @@ sub New
 	        or die ("SNMP service $oid is not available on this SNMP server.");
 	    $self->{'analog'}{$mykey} = $result->{$oid} / 10.;
     	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
+    }
+    
+    foreach my $mykey ( sort keys %{ $description->{'integer'} } ) { 
+    	my $oid = $OIDbase.$OIDinteger.$mykey.".0";
+	    my $result = $session->get_request( $oid ) 
+	        or die ("SNMP service $oid is not available on this SNMP server.");
+	    $self->{'integer'}{$mykey} = $result->{$oid};
+    	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}, "\n" );
     }
     
     # Close the connection
@@ -293,6 +346,10 @@ sub FullLog {
     		push @labelline, "\"$OIDanalog$mykey\"";
         }    	
 
+        foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'integer'} } ) { 
+    		push @labelline, "\"$OIDinteger$mykey\"";
+        }    	
+
     }	
 	
 	# Now prepare the data record.
@@ -302,6 +359,9 @@ sub FullLog {
     }
 	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'analog'} } ) { 
         push @dataline, $self->{'analog'}{$mykey};
+    }
+	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'integer'} } ) { 
+        push @dataline, $self->{'integer'}{$mykey};
     }
 
     my $fh = IO::File->new( $logfilename, '>>' ) or die "Could not open file '$logfilename'";
@@ -328,6 +388,21 @@ sub Status
 }
 
 
+sub DVar
+{
+	
+	my $self = $_[0];
+	my $var  = $_[1];
+	
+	my $value = $self->{'digital'}{$var};
+	
+	return ( $value, 
+	         $self->{'description'}{'digital'}{$var}{'value'}[$value], 
+	         $self->{'description'}{'digital'}{$var}{'remark'} );
+	
+}
+
+
 sub AVar
 {
 	
@@ -341,17 +416,15 @@ sub AVar
 }
 
 
-sub DVar
+sub IVar
 {
 	
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	my $value = $self->{'digital'}{$var};
-	
-	return ( $value, 
-	         $self->{'description'}{'digital'}{$var}{'value'}[$value], 
-	         $self->{'description'}{'digital'}{$var}{'remark'} );
+	return ( $self->{'integer'}{$var}, 
+	         $self->{'description'}{'integer'}{$var}{'unit'}, 
+	         $self->{'description'}{'integer'}{$var}{'remark'} );
 	
 }
 

@@ -20,11 +20,13 @@ $description = {
       5 => { info => 'air supply temperature ', unit => 'ºC',  remark => '' },
      12 => { info => 'Temperature set point ',  unit => 'ºC',  remark => '' },
      35 => { info => 'cooling 0-10vdc ',        unit => '',    remark => 'Unknown units' }
-    } 
+    },
+    'integer' => { } 
   };
 
 $OIDdigital = "1.";
 $OIDanalog  = "2.";
+$OIDinteger = "3.";
 $OIDbase    = "1.3.6.1.4.1.9839.2.";
 $FS = "\t";  # Field separator for the log file output.
 
@@ -53,7 +55,8 @@ sub New
       'label'       => $label,
       'description' => $description,
       'digital'     => { },
-      'analog'      => { }
+      'analog'      => { },
+      'integer'     => { }
       };
 
 	# Open the SNMP-session
@@ -83,6 +86,14 @@ sub New
 	        or die ("SNMP service $oid is not available on this SNMP server.");
 	    $self->{'analog'}{$mykey} = $result->{$oid} / 10.;
     	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
+    }
+    
+    foreach my $mykey ( sort keys %{ $description->{'integer'} } ) { 
+    	my $oid = $OIDbase.$webgate_device.".".$OIDinteger.$mykey.".0";
+	    my $result = $session->get_request( $oid ) 
+	        or die ("SNMP service $oid is not available on this SNMP server.");
+	    $self->{'integer'}{$mykey} = $result->{$oid} / 10.;
+    	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}, "\n" );
     }
     
     # Close the connection
@@ -158,6 +169,10 @@ sub FullLog {
     		push @labelline, "\"$OIDanalog$mykey\"";
         }    	
 
+        foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'integer'} } ) { 
+    		push @labelline, "\"$OIDinteger$mykey\"";
+        }    	
+
     }	
 	
 	# Now prepare the data record.
@@ -167,6 +182,9 @@ sub FullLog {
     }
 	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'analog'} } ) { 
         push @dataline, $self->{'analog'}{$mykey};
+    }
+	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'integer'} } ) { 
+        push @dataline, $self->{'integer'}{$mykey};
     }
 
     my $fh = IO::File->new( $logfilename, '>>' ) or die "Could not open file '$logfilename'";

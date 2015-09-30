@@ -266,13 +266,18 @@ while ($line = <$webtemplate>) {
 		$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
 		push @outputpage, $line;
 	}
-	elsif ( $line =~ /.*\%status\((\d+)\)\%.*/ ) {
+	elsif ( $line =~ /^( *)(.*)\%status\((\d+)\)\%(.*)/ ) {
 		# We assume 4 possible values for status: Normal, Non-Critical, Critical and Off.
-		$devnum = $1;
+		$spaces    = $1;
+		$startline = $2;
+		$devnum    = $3;
+		$endline   = $4;
 		$status = $devices{$devnum}->Status( );
 		$class = $status ; $class =~ s/\-//;
-		$replace = "<button class=\"StatusButton${class}\" onclick=\"parent.location='$links{$devnum}'\">$status<\/button>";
-		$line =~ s/(.*)\%status\(\d+\)\%(.*)/$1$replace$2/;
+		$replace = "$spaces  <button class=\"StatusButton${class}\" onclick=\"parent.location='$devices{$devnum}->{'label'}-detail.html'\">$status<\/button>\n".
+		           "$spaces  <img src=\"48px-line_chart_icon.png\"  onclick=\"parent.location='$links{$devnum}'\">&nbsp;&nbsp;\n" . 
+		           "$spaces  <img src=\"48px-table_icon.png\"       onclick=\"parent.location='$devices{$devnum}->{'label'}-detail.html'\">\n";
+		$line = $spaces.$startline."\n".$replace.$spaces.$endline."\n";
 		push @outputpage, $line;
 	} elsif ( $line =~ /.*\%timestamp\%.*/ ) {
 		$line =~ s/(.*)\%timestamp\%(.*)/$1$timestamp$2/;
