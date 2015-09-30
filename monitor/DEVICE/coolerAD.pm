@@ -212,7 +212,9 @@ sub AVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	return ( $self->{'analog'}{$var}, '', '' );
+	return ( $self->{'analog'}{$var}, 
+	         $self->{'description'}{'analog'}{$var}{'unit'}, 
+	         $self->{'description'}{'analog'}{$var}{'remark'} );
 	
 }
 
