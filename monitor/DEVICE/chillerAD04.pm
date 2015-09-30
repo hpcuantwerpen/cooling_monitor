@@ -9,27 +9,27 @@ use POSIX qw(strftime);
 
 $description = {
   'digital' => { 
-    15 => { info =>  'compressor 1 on/off ', type => 'NoAlarm' },
-    16 => { info =>  'compressor 2 on/off ', type => 'NoAlarm' },
-    17 => { info =>  'compressor 3 on/off ', type => 'NoAlarm' },
-    18 => { info =>  'compressor 4 on/off ', type => 'NoAlarm' },
-    21 => { info =>  'pump 1 on/off ',       type => 'NoAlarm' },
-    22 => { info =>  'pump 2 on/off ',       type => 'NoAlarm' },
-    23 => { info =>  'circuit 1 alarm ',     type => 'CriticalAlarm' },
-    24 => { info =>  'circuit 2 alarm ',     type => 'CriticalAlarm' },
-    28 => { info =>  'cooler disabled',      type => 'NoAlarm' },         # Not sure that we read the correct value.
-    54 => { info =>  'flow alarm ',          type => 'CriticalAlarm' }
+    15 => { info =>  'compressor 1 on/off ', type => 'NoAlarm',       value => ['Off', 'On'],           remark => '' },
+    16 => { info =>  'compressor 2 on/off ', type => 'NoAlarm',       value => ['Off', 'On'],           remark => '' },
+    17 => { info =>  'compressor 3 on/off ', type => 'NoAlarm',       value => ['Off', 'On'],           remark => '' },
+    18 => { info =>  'compressor 4 on/off ', type => 'NoAlarm',       value => ['Off', 'On'],           remark => '' },
+    21 => { info =>  'pump 1 on/off ',       type => 'NoAlarm',       value => ['Off', 'On'],           remark => '' },
+    22 => { info =>  'pump 2 on/off ',       type => 'NoAlarm',       value => ['Off', 'On'],           remark => '' },
+    23 => { info =>  'circuit 1 alarm ',     type => 'CriticalAlarm', value => ['No alarm', 'Alarm'],   remark => '' },
+    24 => { info =>  'circuit 2 alarm ',     type => 'CriticalAlarm', value => ['No alarm', 'Alarm'],   remark => '' },
+    28 => { info =>  'chiller disabled',     type => 'NoAlarm',       value => ['Enabled', 'Disabled'], remark => '' },   # Not sure that we read the correct value.
+    54 => { info =>  'flow alarm ',          type => 'CriticalAlarm', value => ['No alarm', 'Alarm'],   remark => '' }
     } ,
   'analog' => {
-      1 => { info => 'circuit 1 liquid pressure ',        max => '' },
-      2 => { info => 'circuit 2 liquid pressure ',        max => '' },
-      4 => { info => 'chiller return water temperature ', max => '' },
-      5 => { info => 'chiller supply water temperature ', max => '' },
-     11 => { info => 'eev1 suction pressure circuit 1 ',  max => '' },
-     12 => { info => 'eev2 suction pressure circuit 2 ',  max => '' },
-     13 => { info => 'Temperature set point ',            max => '' },
-     17 => { info => 'chiller outside ambient ',          max => '' },
-    122 => { info => 'water flow ',                       max => '' }
+      1 => { info => 'circuit 1 liquid pressure ',        unit => 'bar', remark => 'Winter: ~11, sumer ~18' },
+      2 => { info => 'circuit 2 liquid pressure ',        unit => 'bar', remark => 'Winter: ~11, sumer ~18' },
+      4 => { info => 'chiller return water temperature ', unit => 'ºC',  remark => '' },
+      5 => { info => 'chiller supply water temperature ', unit => 'ºC',  remark => '' },
+     11 => { info => 'eev1 suction pressure circuit 1 ',  unit => 'bar', remark => '' },
+     12 => { info => 'eev2 suction pressure circuit 2 ',  unit => 'bar', remark => '' },
+     13 => { info => 'Temperature set point ',            unit => 'ºC',  remark => '' },
+     17 => { info => 'chiller outside ambient ',          unit => 'ºC',  remark => '' },
+    122 => { info => 'water flow ',                       unit => 'l/m', remark => '' }
     } 
   };
 
@@ -223,7 +223,9 @@ sub AVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	return ( $self->{'analog'}{$var}, '', '' );
+	return ( $self->{'analog'}{$var}, 
+	         $self->{'description'}{'analog'}{$var}{'unit'}, 
+	         $self->{'description'}{'analog'}{$var}{'remark'} );
 	
 }
 
@@ -234,7 +236,11 @@ sub DVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	return ( $self->{'digital'}{$var}, '', '' );
+	my $value = $self->{'digital'}{$var};
+	
+	return ( $value, 
+	         $self->{'description'}{'digital'}{$var}{'value'}[$value], 
+	         $self->{'description'}{'digital'}{$var}{'remark'} );
 	
 }
 

@@ -244,11 +244,17 @@ while ($line = <$webtemplate>) {
 	# %status%, %avar% or %dvar% command per line.
 	if ( $line =~ /.*\%avar\((\d+),(\d+)\)\%.*/ ) {
 		($replace, $units, $remark) = $devices{$1}->AVar( $2 );
+		if ( $units ne '') {
+			$replace = $replace.'&nbsp;'.$units;
+		}
 		$line =~ s/(.*)\%avar\(\d+,\d+\)\%(.*)/$1$replace$2/;
 		push @outputpage, $line;
 	}
 	elsif ( $line =~ /.*\%dvar\((\d+),(\d+)\)\%.*/ ) {
-		($replace, $units, $remark) = $devices{$1}->DVar( $2 );
+		($replace, $valtext, $remark) = $devices{$1}->DVar( $2 );
+		if ( $valtext ne '') {
+			$replace = $replace.' - '.$valtext;
+		}
 		$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
 		push @outputpage, $line;
 	}

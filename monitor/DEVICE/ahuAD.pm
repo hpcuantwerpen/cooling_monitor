@@ -9,17 +9,17 @@ use POSIX qw(strftime);
 
 $description = {
   'digital' => { 
-     21 => { info => 'fan operating ',      type => 'NoAlarm' },
-     26 => { info => 'non-critical alarm ', type => 'SoftAlarm' },
-     27 => { info => 'critical alarm ',     type => 'CriticalAlarm' },
-    114 => { info => 'AHU enabled ',        type => 'NoAlarm' }
+     21 => { info => 'fan operating ',      type => 'NoAlarm',       value => ['No', 'Yes'],           remark => '' },
+     26 => { info => 'non-critical alarm ', type => 'SoftAlarm',     value => ['No alarm', 'Alarm'],   remark => '' },
+     27 => { info => 'critical alarm ',     type => 'CriticalAlarm', value => ['No alarm', 'Alarm'],   remark => '' },
+    114 => { info => 'AHU enabled ',        type => 'NoAlarm',       value => ['Disabled', 'Enabled'], remark => '' }
     } ,
   'analog' => {
-      1 => { info => 'air return humidity ',    max => '' },
-      4 => { info => 'air return temperature ', max => '' },
-      5 => { info => 'air supply temperature ', max => '' },
-     12 => { info => 'Temperature set point ',  max => '' },
-     35 => { info => 'cooling 0-10vdc ',        max => '' }
+      1 => { info => 'air return humidity ',    unit => '%RH', remark => '' },
+      4 => { info => 'air return temperature ', unit => 'ºC',  remark => '' },
+      5 => { info => 'air supply temperature ', unit => 'ºC',  remark => '' },
+     12 => { info => 'Temperature set point ',  unit => 'ºC',  remark => '' },
+     35 => { info => 'cooling 0-10vdc ',        unit => '',    remark => 'Unknown units' }
     } 
   };
 
@@ -199,7 +199,9 @@ sub AVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	return ( $self->{'analog'}{$var}, '', '' );
+	return ( $self->{'analog'}{$var}, 
+	         $self->{'description'}{'analog'}{$var}{'unit'}, 
+	         $self->{'description'}{'analog'}{$var}{'remark'} );
 	
 }
 
@@ -210,7 +212,11 @@ sub DVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	return ( $self->{'digital'}{$var}, '', '' );
+	my $value = $self->{'digital'}{$var};
+	
+	return ( $value, 
+	         $self->{'description'}{'digital'}{$var}{'value'}[$value], 
+	         $self->{'description'}{'digital'}{$var}{'remark'} );
 	
 }
 

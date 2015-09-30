@@ -9,16 +9,16 @@ use POSIX qw(strftime);
 # $description is a reference to an anonymous hash table...
 $description = {
   'digital' => { 
-    31 => { info =>  'fan trip ',                type => 'CriticalAlarm' },
-    57 => { info =>  'high return temperature ', type => 'CriticalAlarm' },
-    58 => { info =>  'low return temperature ',  type => 'CriticalAlarm' },
-    59 => { info =>  'high supply temperature ', type => 'CriticalAlarm' },
-    60 => { info =>  'low supply temperature ',  type => 'CriticalAlarm' }
+    31 => { info =>  'fan trip ',                type => 'CriticalAlarm', value => ['No alarm', 'Alarm'], remark => '' },
+    57 => { info =>  'high return temperature ', type => 'CriticalAlarm', value => ['No alarm', 'Alarm'], remark => '' },
+    58 => { info =>  'low return temperature ',  type => 'CriticalAlarm', value => ['No alarm', 'Alarm'], remark => '' },
+    59 => { info =>  'high supply temperature ', type => 'CriticalAlarm', value => ['No alarm', 'Alarm'], remark => '' },
+    60 => { info =>  'low supply temperature ',  type => 'CriticalAlarm', value => ['No alarm', 'Alarm'], remark => '' }
     } ,
   'analog' => {
      2 => { info => 'evaporator fan speed ',        unit => '%',   remark => '' },
     33 => { info => 'inlet water temperature ',     unit => 'ºC',  remark => '' },
-    34 => { info => 'return air humidity ',         unit => '%RN', remark => '' },
+    34 => { info => 'return air humidity ',         unit => '%RH', remark => '' },
     35 => { info => 'return air temperature ',      unit => 'ºC',  remark => '' },
     36 => { info => 'supply air temperature ',      unit => 'ºC',  remark => '' },
     39 => { info => 'aisle differential pressure ', unit => 'Pa',  remark => '' },
@@ -225,7 +225,11 @@ sub DVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	return ( $self->{'digital'}{$var}, '', '' );
+	my $value = $self->{'digital'}{$var};
+	
+	return ( $value, 
+	         $self->{'description'}{'digital'}{$var}{'value'}[$value], 
+	         $self->{'description'}{'digital'}{$var}{'remark'} );
 	
 }
 
