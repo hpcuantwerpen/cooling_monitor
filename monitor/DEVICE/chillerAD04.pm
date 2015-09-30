@@ -21,8 +21,8 @@ $description = {
     54 => { info =>  'flow alarm ',          type => 'CriticalAlarm', value => ['No alarm', 'Alarm'],   remark => '' }
     } ,
   'analog' => {
-      1 => { info => 'circuit 1 liquid pressure ',        unit => 'bar', remark => 'Winter: ~11, sumer ~18' },
-      2 => { info => 'circuit 2 liquid pressure ',        unit => 'bar', remark => 'Winter: ~11, sumer ~18' },
+      1 => { info => 'circuit 1 liquid pressure ',        unit => 'bar', remark => 'Winter: ~11, summer ~18' },
+      2 => { info => 'circuit 2 liquid pressure ',        unit => 'bar', remark => 'Winter: ~11, summer ~18' },
       4 => { info => 'chiller return water temperature ', unit => 'ºC',  remark => '' },
       5 => { info => 'chiller supply water temperature ', unit => 'ºC',  remark => '' },
      11 => { info => 'eev1 suction pressure circuit 1 ',  unit => 'bar', remark => '' },

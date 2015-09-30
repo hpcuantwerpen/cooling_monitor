@@ -247,6 +247,10 @@ while ($line = <$webtemplate>) {
 		if ( $units ne '') {
 			$replace = $replace.'&nbsp;'.$units;
 		}
+		if ( $remark ne '') {
+			$line =~ s/\"data\"/\"data dataRemark\"/g;
+			$replace = $replace . '<div class="dataRemark"><span class="dataRemark">' . $remark . '</span></div>' ;
+		}
 		$line =~ s/(.*)\%avar\(\d+,\d+\)\%(.*)/$1$replace$2/;
 		push @outputpage, $line;
 	}
@@ -254,6 +258,10 @@ while ($line = <$webtemplate>) {
 		($replace, $valtext, $remark) = $devices{$1}->DVar( $2 );
 		if ( $valtext ne '') {
 			$replace = $replace.' - '.$valtext;
+		}
+		if ( $remark ne '') {
+			$line =~ s/\"data\"/\"data dataRemark\"/g;
+			$replace = $replace . '<div class="dataRemark"><span class="dataRemark">' . $remark . '</span></div>' ;
 		}
 		$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
 		push @outputpage, $line;
