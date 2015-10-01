@@ -146,7 +146,9 @@ $ahu05data = ahuAD->New( "10.28.243.234", 5, "ahu05" );
 #
 # Create the log files for the graphs.
 #
-$timestamp = strftime( "%y%m%d-%H%M", localtime );  # Time stamp used for the web page.
+#$timestamp = strftime( "%y%m%d-%H%M",   localtime );  # Time stamp used for the web page.
+$timestampL = strftime( "%c",           localtime );  # Time stamp used for the web page.
+$timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 
 $chiller01data->Log( "$datadir/chiller01.data" );
 $chiller02data->Log( "$datadir/chiller02.data" );
@@ -300,7 +302,7 @@ while ($line = <$webtemplate>) {
 		$line = $spaces.$startline."\n".$replace.$spaces.$endline."\n";
 		push @outputpage, $line;
 	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
-    	push @outputpage, join( '', $1, $timestamp , $2 );
+    	push @outputpage, join( '', $1, $timestampL, '<br>', $timestampZ , $2 );
 	} elsif ( $line =~ /.*\%AlarmMssgs\%.*/ ) {
 		# We do assume that there is only a %AlarmMssgs% on that line in the HTML file, but we will
 		# prepend each line of the output with the correct number of spaces that was also used in the
@@ -349,7 +351,7 @@ while ( ($devkey, $device) = each %devices ) {
     	if ( $line =~ /(.*)\%device\%(.*)/ ) {
     		push @outputpage, join( '', $1, $device->{'label'} , $2, "\n" );
     	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
-    		push @outputpage, join( '', $1, $timestamp , $2, "\n" );
+    		push @outputpage, join( '', $1, $timestampL, ' (', $timestampZ, ')', $2, "\n" );
     	} elsif ( $line =~ /.*\%dataLines.*/ ) {
     		# This is the main block of this part of the code where most of the work is done.
     		# + Parse the command
