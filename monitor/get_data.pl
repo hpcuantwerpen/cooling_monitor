@@ -242,28 +242,50 @@ open( my $webtemplate, "<", "$codedir/TEMPLATES/monitor_template.html" )
 while ($line = <$webtemplate>) {
 	# Note that for simplicity we assume that the HTML contains only one
 	# %status%, %avar% or %dvar% command per line.
-	if ( $line =~ /.*\%avar\((\d+),(\d+)\)\%.*/ ) {
-		($replace, $units, $remark) = $devices{$1}->AVar( $2 );
-		if ( $units ne '') {
-			$replace = $replace.'&nbsp;'.$units;
-		}
+	if ( $line =~ /(.*)\%avar\((\d+),(\d+)\)\%(.*)/ ) {
+		$pre    = $1;
+		# $devnum = $2;   # Commented out to reduce data copying as the values remain valid until they are used anyway.
+		# $varnum = $3;
+		$post   = $4;
+		($body, $units, $remark) = $devices{$2}->AVar( $3 );
+		#if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+		! length( $units ) || ( $body = join( '', $body, '&nbsp;', $units ) ); # Trick from a Perl book, should be more efficient than the above if.
 		if ( $remark ne '') {
-			$line =~ s/\"data\"/\"data dataRemark\"/g;
-			$replace = $replace . '<div class="dataRemark"><span class="dataRemark">' . $remark . '</span></div>' ;
+			$pre =~ s/\"data\"/\"data dataRemark\"/g;
+			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
 		}
-		$line =~ s/(.*)\%avar\(\d+,\d+\)\%(.*)/$1$replace$2/;
+		# $line = join( '', $pre, $body, $post );
+		push @outputpage, join( '', $pre, $body, $post );
+	}
+	elsif ( $line =~ /(.*)\%ivar\((\d+),(\d+)\)\%(.*)/ ) {
+		$pre    = $1;
+		# $devnum = $2;
+		# $varnum = $3;
+		$post   = $4;
+		($body, $units, $remark) = $devices{$2}->IVar( $3 );
+		#if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+		! length( $units ) || ( $body = join( '', $body, '&nbsp;', $units ) );
+		if ( $remark ne '') {
+			$pre =~ s/\"data\"/\"data dataRemark\"/g;
+			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
+		}
+		$line = join( '', $pre, $body, $post );
 		push @outputpage, $line;
 	}
-	elsif ( $line =~ /.*\%dvar\((\d+),(\d+)\)\%.*/ ) {
-		($replace, $valtext, $remark) = $devices{$1}->DVar( $2 );
-		if ( $valtext ne '') {
-			$replace = $replace.' - '.$valtext;
-		}
+	elsif ( $line =~ /(.*)\%dvar\((\d+),(\d+)\)\%(.*)/ ) {
+		$pre    = $1;
+		# $devnum = $2;
+		# $varnum = $3;
+		$post   = $4;
+		($body, $valtext, $remark) = $devices{$2}->DVar( $3 );
+		#if ( $valtext ne '') { $body = join( '', $body, ' - ', $valtext ); }
+		! length( $valtext ) || ( $body = join( '', $body, ' - ', $valtext ) );
 		if ( $remark ne '') {
-			$line =~ s/\"data\"/\"data dataRemark\"/g;
-			$replace = $replace . '<div class="dataRemark"><span class="dataRemark">' . $remark . '</span></div>' ;
+			$pre =~ s/\"data\"/\"data dataRemark\"/g;
+			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
 		}
-		$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
+		#$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
+		$line = join( '', $pre, $body, $post );
 		push @outputpage, $line;
 	}
 	elsif ( $line =~ /^( *)(.*)\%status\((\d+)\)\%(.*)/ ) {
