@@ -1,0 +1,82 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="300">
+<title>%device% details</title>
+<style>
+body { font-size: 11pt; font-family: Arial, Helvetica, sans-serif }
+
+table.DataTable              { border-spacing: 0 ; border-collapse: collapse; }
+.DataTable th                { text-align: center ; background-color: LightGrey ; padding: 3px 2px ; border : solid black 1px ; }
+.DataTable th.first          { text-align: left ; padding: 3px 2px 3px 5px ; }
+.DataTable td                { text-align: right ; padding: 1px 2px ; border : none ; }
+.DataTable td.top            { vertical-align: top ; }
+.DataTable td.data           { text-align: right ; padding: 1px 2px ; 
+                               border : solid black 1px ; }
+.DataTable td.labelNumber    { text-align: right ; padding: 1px 2px 1px 5px ; background-color: LightGrey ; 
+                               border : solid black 1px ; border-right: none ; }
+.DataTable td.labelName      { text-align: left ; padding: 1px 2px 1px 5px ; background-color: LightGrey ; 
+                               border : solid black 1px ; border-left: none ; }
+.DataTable td.dataRemark     { background-color : CornSilk ; }
+.DataTable td.title          { text-align: center ; font-size: 14pt ; font-weight: bold  ; padding: 4px 2ps ;
+                               border : solid black 1px ; }
+.DataTable td.StatusField    { text-align: center ; 
+                               border: solid black 1px ;  }
+.DataTable td.StatusMessages { text-align: left ; 
+                               border: solid black 1px ;  }
+.DataTable span.ConsoleMssgCritical    { color: Red ; }
+.DataTable span.ConsoleMssgNonCritical { color: Orange ; }
+
+div.dataRemark  { position: relative ; }
+span.dataRemark { position: absolute ;
+                  top: 0px; left: 0 ;
+                  background: Lavender ;
+                  color: black ; 
+                  visibility: hidden ;
+                  margin: 0 ;
+                  padding: 5px ; 
+                  text-align: left ; }
+td.dataRemark:hover div.dataRemark span.dataRemark { visibility: visible ; opacity: 0.9 ; }
+</style>
+</head>
+<body>
+<h1>%device% details</h1>
+
+<p>Time of data capture: %timestamp%.</p>
+
+<table class="DataTable">
+  <tr>
+    <th colspan="3">Digital variables</th>
+    <th colspan="3">Analog variables</th>
+    <th colspan="3">Integer variables</th>
+  </tr>
+<!--
+  <tr>
+    <td class="labelNumber">1</td>
+    <td class="labelName">Digital var 1</td>
+    <td class="data">Value 1</td>
+    <td class="labelNumber">1</td>
+    <td class="labelName">Analog var 1</td>
+    <td class="data">Value 1</td>
+    <td class="labelNumber">1</td>
+    <td class="labelName">Integer var 1</td>
+    <td class="data">Value 1</td>
+  </tr>  
+  <tr>
+    <td class="labelNumber">1</td>
+    <td class="labelName">Digital var 2</td>
+    <td class="data">Value 2</td>
+    <td class="nolabel"></td>
+    <td class="nolabel"></td>
+    <td class="nodata"></td>
+    <td class="labelNumber">1</td>
+    <td class="labelName">Integer var 2</td>
+    <td class="data">Value 2</td>
+  </tr>
+-->
+%dataLines(||  <tr>\n||  </tr>\n||    <td class="labelNumber">%number%</td>\n    <td class="labelName">%label%</td>\n    <td class="data">%value%</td>\n||    <td class="nolabel"></td>\n    <td class="nolabel"></td>\n    <td class="nodata"></td>\n||)%  
+</table>
+
+</body>
+</html>
+  

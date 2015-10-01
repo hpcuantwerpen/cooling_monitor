@@ -63,7 +63,7 @@
 
 
 #use strict;
-#use Data::Dumper qw(Dumper);
+use Data::Dumper qw(Dumper);
 
 use IO::File;
 use File::Basename;
@@ -269,8 +269,7 @@ while ($line = <$webtemplate>) {
 			$pre =~ s/\"data\"/\"data dataRemark\"/g;
 			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
 		}
-		$line = join( '', $pre, $body, $post );
-		push @outputpage, $line;
+		push @outputpage, join( '', $pre, $body, $post );
 	}
 	elsif ( $line =~ /(.*)\%dvar\((\d+),(\d+)\)\%(.*)/ ) {
 		$pre    = $1;
@@ -285,8 +284,7 @@ while ($line = <$webtemplate>) {
 			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
 		}
 		#$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
-		$line = join( '', $pre, $body, $post );
-		push @outputpage, $line;
+		push @outputpage, join( '', $pre, $body, $post );
 	}
 	elsif ( $line =~ /^( *)(.*)\%status\((\d+)\)\%(.*)/ ) {
 		# We assume 4 possible values for status: Normal, Non-Critical, Critical and Off.
@@ -296,14 +294,13 @@ while ($line = <$webtemplate>) {
 		$endline   = $4;
 		$status = $devices{$devnum}->Status( );
 		$class = $status ; $class =~ s/\-//;
-		$replace = "$spaces  <button class=\"StatusButton${class}\" onclick=\"parent.location='$devices{$devnum}->{'label'}-detail.html'\">$status<\/button>\n".
+		$replace = "$spaces  <button class=\"StatusButton${class}\" onclick=\"parent.location='$devices{$devnum}->{'label'}-details.html'\">$status<\/button>\n".
 		           "$spaces  <img src=\"48px-line_chart_icon.png\"  onclick=\"parent.location='$links{$devnum}'\">&nbsp;&nbsp;\n" . 
-		           "$spaces  <img src=\"48px-table_icon.png\"       onclick=\"parent.location='$devices{$devnum}->{'label'}-detail.html'\">\n";
+		           "$spaces  <img src=\"48px-table_icon.png\"       onclick=\"parent.location='$devices{$devnum}->{'label'}-details.html'\">\n";
 		$line = $spaces.$startline."\n".$replace.$spaces.$endline."\n";
 		push @outputpage, $line;
-	} elsif ( $line =~ /.*\%timestamp\%.*/ ) {
-		$line =~ s/(.*)\%timestamp\%(.*)/$1$timestamp$2/;
-		push @outputpage, $line;
+	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
+    	push @outputpage, join( '', $1, $timestamp , $2 );
 	} elsif ( $line =~ /.*\%AlarmMssgs\%.*/ ) {
 		# We do assume that there is only a %AlarmMssgs% on that line in the HTML file, but we will
 		# prepend each line of the output with the correct number of spaces that was also used in the
@@ -321,9 +318,124 @@ while ($line = <$webtemplate>) {
 
 close( $webtemplate );
 
-open( $webpage, ">", "$webdir/index.html" );
-print $webpage @outputpage;
-close( $webpage );
+open( $webpageFH, ">", "$webdir/index.html" );
+print $webpageFH @outputpage;
+close( $webpageFH );
+
+#
+#
+# Generate the details web pages
+#
+#
+
+# Read the web template
+open( my $webtemplateFH, "<", "$codedir/TEMPLATES/details_template.html" ) 
+  or die "Could not open the web template file $codedir/details_template.html";
+my @webtemplate = <$webtemplateFH>;
+close( $webtemplateFH );
+
+while ( ($devkey, $device) = each %devices ) {
+
+    # 
+    # Create the details web page for device $device.
+    #
+    
+    # - Create an empty list as the output structure
+    my @outputpage = ( );
+    
+    # - Now process the template and build the output page.
+    foreach $line(@webtemplate) {
+    	
+    	if ( $line =~ /(.*)\%device\%(.*)/ ) {
+    		push @outputpage, join( '', $1, $device->{'label'} , $2, "\n" );
+    	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
+    		push @outputpage, join( '', $1, $timestamp , $2, "\n" );
+    	} elsif ( $line =~ /.*\%dataLines.*/ ) {
+    		# This is the main block of this part of the code where most of the work is done.
+    		# + Parse the command
+    		$line =~ s/\\n/\n/g;
+    		my @cmds = split( '\|\|', $line ); # Should result in a 6-elenment array, the first and the last element aren't really needed.
+    		my $pre      = $cmds[1];
+    		my $post     = $cmds[2];
+    		my $withdata = $cmds[3];
+    		my $nodata   = $cmds[4];
+    		# + Get the keys of each type and sort them numerically.
+    		@Dkeys = sort { $a <=> $b } ( keys %{$device->{'digital'}} );
+     		@Akeys = sort { $a <=> $b } ( keys %{$device->{'analog'}} );
+    		@Ikeys = sort { $a <=> $b } ( keys %{$device->{'integer'}} );
+    		# + Determine the largest of the number of keys of the three variable types.
+    		$max = ( $#Dkeys > $#Akeys ) ? $#Dkeys : $#Akeys;
+    		$max = ( $max > $#Ikeys )    ? $max    : $#Ikeys;
+    		# + Loop over the rows of the table to generate.
+    		for ( my $c = 0; $c < $max; $c++ ) {
+    			# ++ Start of output record
+    			push @outputpage, $pre;
+    			# ++ Digital variable (if there is one)
+    			if ( $c < $#Dkeys ) {
+    				$workline = $withdata;
+    				$key = $Dkeys[$c];
+    				$label = $device->{'description'}{'digital'}{$key}{'info'};
+ 		            ($value, $valtext, $remark) = $device->DVar( $key );
+		            #if ( $valtext ne '') { $value = join( '', $value, ' - ', $valtext ); }
+		            ! length( $valtext ) || ( $value = join( '', $value, ' - ', $valtext ) ); # Add textual value
+		            if ( $remark ne '') {
+			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+			            $value = join( '', $value, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' ); # Add a remark.
+		            }
+		            $workline =~ s/\%number\%/$key/;
+		            $workline =~ s/\%label\%/$label/;
+		            $workline =~ s/\%value\%/$value/;		            
+		            push @outputpage, $workline;  				
+    			} else { push @outputpage, $nodata; }
+     			# ++ Analog variable (if there is one)
+    			if ( $c < $#Akeys ) {
+    				$workline = $withdata;
+    				$key = $Akeys[$c];
+    				$label = $device->{'description'}{'analog'}{$key}{'info'};
+		            ($value, $units, $remark) = $device->AVar( $key );
+		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+		            ! length( $units ) || ( $value = join( '', $value, '&nbsp;', $units ) ); # Add units to the value
+		            if ( $remark ne '') {
+			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+			            $value= join( '', $value, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' ); # Add a remark.
+		            }
+		            $workline =~ s/\%number\%/$key/;
+		            $workline =~ s/\%label\%/$label/;
+		            $workline =~ s/\%value\%/$value/;		            
+		            push @outputpage, $workline;  				
+    			} else { push @outputpage, $nodata; }
+     			# ++ Integer variable (if there is one)
+    			if ( $c < $#Ikeys ) {
+    				$workline = $withdata;
+    				$key = $Ikeys[$c];
+    				$label = $device->{'description'}{'integer'}{$key}{'info'};
+		            ($value, $units, $remark) = $device->IVar( $key );
+		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+		            ! length( $units ) || ( $value = join( '', $value, '&nbsp;', $units ) ); # Add units to the value
+		            if ( $remark ne '') {
+			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+			            $value= join( '', $value, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' ); # Add a remark.
+		            }
+		            $workline =~ s/\%number\%/$key/;
+		            $workline =~ s/\%label\%/$label/;
+		            $workline =~ s/\%value\%/$value/;		            
+		            push @outputpage, $workline;  				
+    			} else { push @outputpage, $nodata; }
+    			# ++ Terminate the record
+    			push @outputpage, $post;
+    		} # End of for-loop.
+    		
+    	} else { push @outputpage, $line; }
+    	
+    } # End of the foreach loop iterating over the lines of the webpage template
+
+    # - Finally write the output page.
+    open( $webpageFH, ">", "$webdir/$device->{'label'}-details.html" );
+    print $webpageFH @outputpage;
+    close( $webpageFH );
+
+}  # End of while loop over the devices.
+
 
 #
 #
