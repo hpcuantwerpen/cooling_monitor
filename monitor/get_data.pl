@@ -170,6 +170,8 @@ $chiller02data->FullLog( $datadir );
 $chiller04data->FullLog( $datadir );
 $cooler01data->FullLog( $datadir );
 $cooler02data->FullLog( $datadir );
+#$ahu01data->FullLog( $datadir );
+#$ahu02data->FullLog( $datadir );
 $ahu03data->FullLog( $datadir );
 $ahu04data->FullLog( $datadir );
 $ahu05data->FullLog( $datadir );
