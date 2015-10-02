@@ -73,8 +73,8 @@ while ( <INFILE> ) {
 	
 	# Now create the new time stamp in GMT = Zulu time, in ISO8601-format
 	my $timestamp = strftime(  "%Y%m%dT%H%MZ", gmtime( $current_epoch ) );
-	unshift @fields, $timestamp;
-	#$fields[0] = $timestamp;
+	#unshift @fields, $timestamp;
+	$fields[0] = $timestamp;
 	
 	# Push to the contents of the output file.
 	push @output, join( "\t", @fields );
