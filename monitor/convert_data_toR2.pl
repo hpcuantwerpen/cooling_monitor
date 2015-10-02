@@ -6,7 +6,6 @@
 
 use Data::Dumper qw(Dumper);
 use POSIX qw(strftime);
-use POSIX::strptime qw(strptime);
 use Time::Local;
 
 
@@ -64,13 +63,18 @@ while ( <INFILE> ) {
 	# Time::Local::timelocal doesn't seem to be properly dealing with winter- and summertime transitions,
 	# so we convert the time stamp to EPOCH time as if it were in GMT and do the time zone correction 
 	# ourselves to get the correct EPOCH time.
-	my @current_time  = strptime( $date_time, "%y%m%d%H%M" );
+	# Note that we could use: 
+	# POSIX::strptime qw(strptime);
+	# my @current_time  = strptime( $date_time, "%y%m%d%H%M" );
+	# But we avoid this since strptime is not a core routine and is easy to avoid in our case.
+	$fields[0] =~ /(\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)/;
+	@current_time = ( 0, $5, $4, $3, $2 - 1, $1 + 100 );
 	my $current_epoch = timegm( @current_time ) - ($current_offset - $current_cor) * 3600;
 	
 	# Now create the new time stamp in GMT = Zulu time, in ISO8601-format
 	my $timestamp = strftime(  "%Y%m%dT%H%MZ", gmtime( $current_epoch ) );
-	#unshift @fields, $timestamp;
-	$fields[0] = $timestamp;
+	unshift @fields, $timestamp;
+	#$fields[0] = $timestamp;
 	
 	# Push to the contents of the output file.
 	push @output, join( "\t", @fields );
