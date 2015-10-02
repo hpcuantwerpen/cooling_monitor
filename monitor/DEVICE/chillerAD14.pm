@@ -170,8 +170,8 @@ $description = {
    	41 => { info => 'pump 2 run hours - low component',               unit => 'h',   remark => '' },
    	42 => { info => 'position of EEV 1',                              unit => '',    remark => 'Step positions of the Electronic Expansion Valve' },
    	43 => { info => 'position of EEV 2',                              unit => '',    remark => 'Step positions of the Electronic Expansion Valve' },
-   	44 => { info => 'oil preheat coutnd down timer after power fail', unit => 'm',   remark => '' },
-   	45 => { info => 'required stages fron teh sequencer',             unit => '',    remark => '' },
+   	44 => { info => 'oil preheat countdown timer after power fail',   unit => 'm',   remark => '' },
+   	45 => { info => 'required stages fron the sequencer',             unit => '',    remark => '' },
    	46 => { info => 'anti-freeze high ounter',                        unit => 'h',   remark => '' },
    	47 => { info => 'anti-freeze low ounter',                         unit => 'h',   remark => '' },
    	48 => { info => 'low supply temperature limiting high counter',   unit => 'm',   remark => '' },
@@ -325,7 +325,7 @@ sub FullLog {
 	my $self   = $_[0];
 	my $logdir = $_[1];
 	
-	my $filestamp = substr( $self->{'timestamp'}, 0, 4 );  # YYMM-part of the time stamp.
+	my $filestamp = substr( $self->{'timestamp'}, 2, 4 );  # YYMM-part of the time stamp.
 	my $logfilename = "$logdir/$self->{'label'}-$filestamp.log";
 
     my @labelline = ();

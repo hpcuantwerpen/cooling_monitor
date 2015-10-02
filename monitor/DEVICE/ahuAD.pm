@@ -152,7 +152,7 @@ sub FullLog {
 	my $self   = $_[0];
 	my $logdir = $_[1];
 	
-	my $filestamp = substr( $self->{'timestamp'}, 0, 4 );  # YYMM-part of the time stamp.
+	my $filestamp = substr( $self->{'timestamp'}, 2, 4 );  # YYMM-part of the time stamp.
 	my $logfilename = "$logdir/$self->{'label'}-$filestamp.log";
 
     my @labelline = ();
