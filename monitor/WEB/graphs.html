@@ -14,14 +14,15 @@
 
   <script>
   function switchGraph( obj_id, change_to ) {
-    document.getElementById( "button-"+obj_id+"-7d"   ).className = "off";
+	document.getElementById( "button-"+obj_id+"-7d"   ).className = "off";
+	document.getElementById( "button-"+obj_id+"-50d"   ).className = "off";
     document.getElementById( "button-"+obj_id+"-365d" ).className = "off";
     document.getElementById( "button-"+obj_id+"-all"  ).className = "off";
     document.getElementById( "button-"+obj_id+"-"+change_to ).className = "on";
     myobj = document.getElementById( obj_id );
     myobj.style.visibility = 'hidden';  // Hide-and-show works around a bug in Safari and 
                                         // makes sure the object is repainted.
-    myobj.data = myobj.data.replace( /(-7d|-365d|-all)\.svg/, "-" + change_to + ".svg" );
+    myobj.data = myobj.data.replace( /(-7d|-50d|-365d|-all)\.svg/, "-" + change_to + ".svg" );
     myobj.style.visibility = 'visible';
   } 
   </script>
@@ -32,6 +33,7 @@
       "<div id=\"div-graphname\" class=\"graph-container\">\n" +   
       "  <div class=\"buttonbar\">" +
       "    <button onclick=\"switchGraph('graphname','7d')\"   id=\"button-graphname-7d\"   class=\"on\" >7d</button>\n" +
+      "    <button onclick=\"switchGraph('graphname','50d')\"  id=\"button-graphname-50d\"  class=\"off\">50d</button>\n" +
       "    <button onclick=\"switchGraph('graphname','365d')\" id=\"button-graphname-365d\" class=\"off\">365d</button>\n" + 
       "    <button onclick=\"switchGraph('graphname','all')\"  id=\"button-graphname-all\"  class=\"off\">all</button>\n" + 
       "  </div>" +
@@ -63,6 +65,7 @@
 <div id="div-ch01-temp" class="graph-container">
   <div class="buttonbar">
     <button onclick="switchGraph('ch01-temp','7d')"   id="button-ch01-temp-7d"   class="on" >7d</button>
+    <button onclick="switchGraph('ch01-temp','50d')"  id="button-ch01-temp-50d"  class="off">50d</button>
     <button onclick="switchGraph('ch01-temp','365d')" id="button-ch01-temp-365d" class="off">365d</button>
     <button onclick="switchGraph('ch01-temp','all')"  id="button-ch01-temp-all"  class="off">all</button>
   </div>
