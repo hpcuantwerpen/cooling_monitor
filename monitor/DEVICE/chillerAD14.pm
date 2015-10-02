@@ -259,7 +259,7 @@ sub New
     $session->close;
 
     # Add the timestamp field
-    $self->{'timestamp'} = strftime( "%y%m%d-%H%M", localtime );
+    $self->{'timestamp'} = strftime( "%Y%m%dT%H%MZ", gmtime );
 
     # Finalise the object creation
     bless( $self, $class );

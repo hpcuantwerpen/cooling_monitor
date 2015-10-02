@@ -43,7 +43,7 @@ data_safe     = "behind fc rgb \"0xe000ff00\" fs noborder"
 
 set datafile separator "\t"
 set xdata time
-set timefmt "%y%m%d-%H%M"
+set timefmt "%Y%m%dT%H%MZ"
 
 # Common to all plots
 set format x "%m/%d"        # Label format for x-axis
