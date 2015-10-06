@@ -2,6 +2,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta http-equiv="refresh" content="300" />
+<!--  Do not cache the page to make sure the page is reloaded when a user returns to it -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -45,8 +46,13 @@ span.dataRemark { position: absolute ;
                   text-align: left ; }
 td.dataRemark:hover div.dataRemark span.dataRemark { visibility: visible ; opacity: 0.9 ; }
 </style>
+<script>
+function alertPageshow( ) { alert("onPageShow event"); }
+function alertPagehide( ) { alert("onPageHide event"); }
+function alertBeforeunload( ) { alert("onBeforeUnload event"); }
+</script>
 </head>
-<body>
+<body onpageshow="alertPageshow()" onpagehide="alertPagehide()" onbeforeunload="alertBeforeunload()">
 <h1>Cooling infrastructure status</h1>
 
 <table class="DataTable">

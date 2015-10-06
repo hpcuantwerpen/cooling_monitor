@@ -182,11 +182,11 @@ $ahu05data->FullLog( $datadir );
 %devices = (
    1 => $chiller01data,
    2 => $chiller02data,
-   4 => $chiller04data,
-  11 => $cooler01data,
-  12 => $cooler02data,
-  23 => $ahu03data,
-  24 => $ahu04data,
+#   4 => $chiller04data,
+#  11 => $cooler01data,
+#  12 => $cooler02data,
+#  23 => $ahu03data,
+#  24 => $ahu04data,
   25 => $ahu05data	
 );
 
@@ -198,7 +198,7 @@ $ahu05data->FullLog( $datadir );
   12 => "graphs.html#cooler02",
   23 => "graphs.html#AHU",
   24 => "graphs.html#AHU",
-  25 => "graphs.html#AHU",
+  25 => "graphs.html#AHU"
 );
 
 # Also create a hash with the number corresponding to each device label for sorting.
@@ -231,6 +231,63 @@ foreach my $workdevice (values %devices ) {
 }
 # Sort the message first according to how critical they are, then according to the device order.
 @alarmMssgs = sort { (($res = ($a->{level} cmp $b->{level})) == 0) ? ($deviceOrder{$a->{source}} <=> $deviceOrder{$b->{source}}) : $res } @alarmMssgs ;
+
+#
+#
+# Generate the raw data page
+#
+#
+
+open( my $webtemplate, "<", "$codedir/TEMPLATES/datapage_header_template.html" ) 
+  or die "Could not open the web template file $codedir/datapage_header_template.html";
+my @outputpage = <$webtemplateFH>;
+close( $webtemplateFH );
+
+foreach my $devkey ( sort {$a <=> $b} keys %devices ) {
+
+	my $device = $devices{$devkey};
+
+    push @outputpage, join( '', "<div>Variables for device ", $device->{'label'}, "\n" );
+    
+    # Do the digital variables
+    push @outputpage, "  <div>Digital variables\n";
+    foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'digital'} } ) { 
+    	$label = join( '', 'RD_', $devkey, '_D_', $mykey );
+    	($value, $valtext, $remark) = $device->DVar( $mykey ); # In fact, we don't need $remark here...
+    	! length( $valtext ) || ( $value = join( '', $value, ' - ', $valtext ) ); # Add textual value
+    	push @outputpage, join( '', "    <div id=\"", $label, "\">", $value, "</div>\n" );
+    }    
+    push @outputpage, "  </div>\n";
+    
+    # Do the analog variables
+    push @outputpage, "  <div>Analog variables\n";
+    foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'analog'} } ) { 
+    	$label = join( '', 'RD_', $devkey, '_A_', $mykey );
+    	($value, $units, $remark) = $device->AVar( $mykey ); # In fact, we don't need $units and $remark here...
+    	push @outputpage, join( '', "    <div id=\"", $label, "\">", $value, "</div>\n" );
+    }    
+    push @outputpage, "  </div>\n";
+    
+    # Do the integer variables
+    push @outputpage, "  <div>Integer variables\n";
+    foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'integer'} } ) { 
+    	$label = join('', 'RD_', $devkey, "_I_", $mykey );
+    	($value, $units, $remark) = $device->IVar( $mykey ); # In fact, we don't need $units and $remark here...
+    	push @outputpage, join( '', "    <div id=\"", $label, "\">", $value, "</div>\n" );
+    }    
+    push @outputpage, " </div>\n";
+    
+    push @outputpage, "</div>\n"; 
+
+}  # End of while loop over all devices.
+
+push @outputpage, "</body>\n</html>\n";
+
+open( $webpageFH, ">", "$webdir/rawdata.html" );
+print $webpageFH @outputpage;
+close( $webpageFH );
+
+exit(-1);
 
 #
 #
@@ -345,7 +402,7 @@ while ( ($devkey, $device) = each %devices ) {
     #
     
     # - Create an empty list as the output structure
-    my @outputpage = ( );
+    @outputpage = ( );
     
     # - Now process the template and build the output page.
     foreach $line(@webtemplate) {
@@ -472,11 +529,12 @@ close( $gnuplotPipe );
 #
 
 if ( ( ! (-e "$webdir/graphs.html") ) || 
-     ( stat("$codedir/WEB/graphs.html")->mtime > stat("$webdir/graphs.html")->mtime ) ) {
+     ( (stat("$codedir/WEB/graphs.html")->mtime) > (stat("$webdir/graphs.html")->mtime) ) ) {
 	# Copy the files in the WEB subdirectory of the code to the web server directory.
 	# We could name them one by one, but then we should not forget to adapt this bit of 
 	# code when we add files. 
 	# This loop is more robust.
+print "Updating web pages from WEB subdirectory.\n";
 	opendir( DIR, "$codedir/WEB" );
 	my @filestocopy = readdir( DIR );
 	closedir( DIR );
