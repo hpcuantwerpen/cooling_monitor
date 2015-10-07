@@ -1,16 +1,11 @@
 <html>
 <head>
 <meta charset="UTF-8" />
-<meta http-equiv="refresh" content="300" />
-<!--  Do not cache the page to make sure the page is reloaded when a user returns to it -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
 <title>Cooling infrastructure status</title>
 <style>
 body { font-size: 11pt; font-family: Arial, Helvetica, sans-serif }
 
-button { font-size: 13pt ; font-weight: bold ; width: 90pt ; text-align: center ; }
+button { font-size: 13pt ; font-weight: bold ; width: 100pt ; text-align: center ; }
 button.StatusButtonNormal      { background-color: LawnGreen ; }
 button.StatusButtonCritical    { background-color: #FF2020 ; }
 button.StatusButtonNonCritical { background-color: Yellow ; }
@@ -45,14 +40,69 @@ span.dataRemark { position: absolute ;
                   padding: 5px ; 
                   text-align: left ; }
 td.dataRemark:hover div.dataRemark span.dataRemark { visibility: visible ; opacity: 0.9 ; }
+
+#dataContainer { display: none; }
 </style>
 <script>
-function alertPageshow( ) { alert("onPageShow event"); }
-function alertPagehide( ) { alert("onPageHide event"); }
-function alertBeforeunload( ) { alert("onBeforeUnload event"); }
+
+var myTimer;
+
+function onPageshow( ) { refreshContent( ); }
+function onPagehide( ) { clearTimeout( myTimer ); }
+// function onBeforeunload( ) { alert("onBeforeUnload event"); }
+
+function refreshContent(  ) {
+
+	fetchData = new XMLHttpRequest( );  // Oject to connect to the server to get the data.
+	
+	// Define the function for processing the data received through the object.
+	fetchData.onreadystatechange = function( ) {
+        if (fetchData.readyState == 4 && fetchData.status == 200) {
+            document.getElementById("dataContainer").innerHTML = fetchData.responseText;
+            refreshFields( );
+        }
+    }
+	
+	// Fetch the raw data from the server.
+	fetchData.open( "GET", "rawdata.txt", true );
+	fetchData.send( );
+		
+} // End refreshContent
+
+
+function refreshFields( ) {
+	
+	//alert( "Ready to refresh fields" );
+	
+	// Update the status buttons.
+	var statusButtons = document.getElementsByClassName( "statusItem" );	
+	for ( c1 = 0; c1 < statusButtons.length; c1++ ) {
+		var dataID   = "RD_" + statusButtons[c1].id;
+		var dataElem = document.getElementById( dataID );
+		statusButtons[c1].innerHTML = dataElem.innerHTML;
+		var parentElem = statusButtons[c1].parentNode;
+		var buttonClass = (dataElem.innerHTML == "Non-Critical") ? "StatusButtonNonCritical" : ( "StatusButton" + dataElem.innerHTML); 
+		parentElem.setAttribute( "class",  buttonClass );
+	}
+	
+	// Update all data fields.
+	var dataFields = document.getElementsByClassName( "dataItem" );
+	for ( c1 = 0; c1 < dataFields.length; c1++ ) {
+		var dataID   = "RD_" + dataFields[c1].id;
+		var dataElem = document.getElementById( dataID );
+		dataFields[c1].innerHTML = dataElem.innerHTML;
+	}	
+
+	// Set next refresh of the data on the page.
+	var expTime  = Date.parse( document.getElementById( "RD_Expiration" ).innerHTML );
+	var currTime = (new Date()).getTime();
+	myTimer = setTimeout( "refreshContent();", ((expTime - currTime) > 15000) ? (expTime - currTime) : 15000 );
+	
+}
+
 </script>
 </head>
-<body onpageshow="alertPageshow()" onpagehide="alertPagehide()" onbeforeunload="alertBeforeunload()">
+<body onpageshow="javascript:onPageshow()" onpagehide="javascript:onPagehide()">
 <h1>Cooling infrastructure status</h1>
 
 <table class="DataTable">
@@ -445,5 +495,6 @@ function alertBeforeunload( ) { alert("onBeforeUnload event"); }
   </tr>
 </table>
 
+<div id="dataContainer">Dit is een test.</div>
 </body>
 </html>
