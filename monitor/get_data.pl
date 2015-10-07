@@ -95,11 +95,11 @@ while (@ARGV) {
     	shift @ARGV;
     	shift @ARGV;
     } elsif ( $ARGV[0] =~ /^-W|^--web-dir/ ) {
-    	$dataValid = $ARGV[1];
+    	$webdir = $ARGV[1];
     	shift @ARGV;
     	shift @ARGV;
     } elsif ( $ARGV[0] =~ /^-I|^--interval/ ) {
-    	$webdir = $ARGV[1];
+    	$dataValid = $ARGV[1];
     	shift @ARGV;
     	shift @ARGV;
     } elsif ( $ARGV[0] =~ /^-H|^--help/ ) {
