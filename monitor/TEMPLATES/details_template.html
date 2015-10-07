@@ -37,9 +37,60 @@ span.dataRemark { position: absolute ;
                   padding: 5px ; 
                   text-align: left ; }
 td.dataRemark:hover div.dataRemark span.dataRemark { visibility: visible ; opacity: 0.9 ; }
+
+#dataContainer { display: none; }
 </style>
+
+<script>
+
+var myTimer;
+
+function onPageshow( ) { refreshContent( ); }
+function onPagehide( ) { clearTimeout( myTimer ); }
+// function onBeforeunload( ) { alert("onBeforeUnload event"); }
+
+function refreshContent(  ) {
+
+	fetchData = new XMLHttpRequest( );  // Oject to connect to the server to get the data.
+	
+	// Define the function for processing the data received through the object.
+	fetchData.onreadystatechange = function( ) {
+        if (fetchData.readyState == 4 && fetchData.status == 200) {
+            document.getElementById("dataContainer").innerHTML = fetchData.responseText;
+            refreshFields( );
+        }
+    }
+	
+	// Fetch the raw data from the server.
+	fetchData.open( "GET", "rawdata.txt", true );
+	fetchData.send( );
+		
+} // End refreshContent
+
+
+function refreshFields( ) {
+	
+	//alert( "Ready to refresh fields" );
+	
+	// Update all data fields.
+	var dataFields = document.getElementsByClassName( "dataItem" );
+	for ( c1 = 0; c1 < dataFields.length; c1++ ) {
+		var dataID   = "RD_" + dataFields[c1].id;
+		var dataElem = document.getElementById( dataID );
+		dataFields[c1].innerHTML = dataElem.innerHTML;
+	}	
+
+	// Set next refresh of the data on the page.
+	var expTime  = Date.parse( document.getElementById( "RD_Expiration" ).innerHTML );
+	var currTime = (new Date()).getTime();
+	myTimer = setTimeout( "refreshContent();", ((expTime - currTime) > 15000) ? (expTime - currTime) : 15000 );
+	
+}
+
+</script>
+
 </head>
-<body>
+<body onpageshow="javascript:onPageshow()" onpagehide="javascript:onPagehide()">
 <h1>%device% details</h1>
 
 <p>Time of data capture: %timestamp%.</p>
@@ -77,6 +128,7 @@ td.dataRemark:hover div.dataRemark span.dataRemark { visibility: visible ; opaci
 %dataLines(||  <tr>\n||  </tr>\n||    <td class="labelNumber">%number%</td>\n    <td class="labelName">%label%</td>\n    <td class="data">%value%</td>\n||    <td class="nolabel"></td>\n    <td class="nolabel"></td>\n    <td class="nodata"></td>\n||)%  
 </table>
 
+<div id="dataContainer"></div>
 </body>
 </html>
   

@@ -252,7 +252,8 @@ foreach my $workdevice (values %devices ) {
 my @outputpage = ( );
 
 # Add the time stamp
-push @outputpage, "<div id=\"RD_time\">$timestampL<br>$timestampZ</div>";
+push @outputpage, "<div id=\"RD_time2L\">$timestampL<br>$timestampZ</div>\n";
+push @outputpage, "<div id=\"RD_time1L\">$timestampL ($timestampZ)</div>\n";
 
 # Add the alarm strings.
 push @outputpage, "<div id=\"RD_alarms\">\n";
@@ -400,7 +401,7 @@ print "Regenerating the index.html file.\n";
     		$line = $spaces.$startline."\n".$replace.$spaces.$endline."\n";
     		push @outputpage, $line;
     	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
-        	push @outputpage, $1.'<span class="dataItem" id="time"></span>'.$2."\n";
+        	push @outputpage, $1.'<span class="dataItem" id="time2L"></span>'.$2."\n";
     	} elsif ( $line =~ /.*\%AlarmMssgs\%.*/ ) {
     		# We do assume that there is only a %AlarmMssgs% on that line in the HTML file, but we will
     		# prepend each line of the output with the correct number of spaces that was also used in the
@@ -419,121 +420,145 @@ print "Regenerating the index.html file.\n";
     
 } # End of the re-generation of the index web page.
 
-exit(-1);
-
 #
 #
 # Generate the details web pages
 #
 #
 
-# Read the web template
-open( my $webtemplateFH, "<", "$codedir/TEMPLATES/details_template.html" ) 
-  or die "Could not open the web template file $codedir/details_template.html";
-my @webtemplate = <$webtemplateFH>;
-close( $webtemplateFH );
+#
+# We'll rebuild all of them as soon as one is missing or out-of-date.
+#
 
-while ( ($devkey, $device) = each %devices ) {
+my $rebuildDetails = 0;
+$mtime_template    =  (stat("$codedir/TEMPLATES/details_template.html")->mtime);
+#$mtime_code        =  (stat("$codedir/get_data.pl")->mtime);   # Still set from before.
 
-    # 
-    # Create the details web page for device $device.
-    #
-    
-    # - Create an empty list as the output structure
-    @outputpage = ( );
-    
-    # - Now process the template and build the output page.
-    foreach $line(@webtemplate) {
-    	
-    	if ( $line =~ /(.*)\%device\%(.*)/ ) {
-    		push @outputpage, join( '', $1, $device->{'label'} , $2, "\n" );
-    	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
-    		push @outputpage, join( '', $1, $timestampL, ' (', $timestampZ, ')', $2, "\n" );
-    	} elsif ( $line =~ /.*\%dataLines.*/ ) {
-    		# This is the main block of this part of the code where most of the work is done.
-    		# + Parse the command
-    		$line =~ s/\\n/\n/g;
-    		my @cmds = split( '\|\|', $line ); # Should result in a 6-elenment array, the first and the last element aren't really needed.
-    		my $pre      = $cmds[1];
-    		my $post     = $cmds[2];
-    		my $withdata = $cmds[3];
-    		my $nodata   = $cmds[4];
-    		# + Get the keys of each type and sort them numerically.
-    		@Dkeys = sort { $a <=> $b } ( keys %{$device->{'digital'}} );
-     		@Akeys = sort { $a <=> $b } ( keys %{$device->{'analog'}} );
-    		@Ikeys = sort { $a <=> $b } ( keys %{$device->{'integer'}} );
-    		# + Determine the largest of the number of keys of the three variable types.
-    		$max = ( $#Dkeys > $#Akeys ) ? $#Dkeys : $#Akeys;
-    		$max = ( $max > $#Ikeys )    ? $max    : $#Ikeys;
-    		# + Loop over the rows of the table to generate.
-    		for ( my $c = 0; $c < $max; $c++ ) {
-    			# ++ Start of output record
-    			push @outputpage, $pre;
-    			# ++ Digital variable (if there is one)
-    			if ( $c < $#Dkeys ) {
-    				$workline = $withdata;
-    				$key = $Dkeys[$c];
-    				$label = $device->{'description'}{'digital'}{$key}{'info'};
- 		            ($value, $valtext, $remark) = $device->DVar( $key );
-		            #if ( $valtext ne '') { $value = join( '', $value, ' - ', $valtext ); }
-		            ! length( $valtext ) || ( $value = join( '', $value, ' - ', $valtext ) ); # Add textual value
-		            if ( $remark ne '') {
-			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
-			            $value = join( '', $value, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' ); # Add a remark.
-		            }
-		            $workline =~ s/\%number\%/$key/;
-		            $workline =~ s/\%label\%/$label/;
-		            $workline =~ s/\%value\%/$value/;		            
-		            push @outputpage, $workline;  				
-    			} else { push @outputpage, $nodata; }
-     			# ++ Analog variable (if there is one)
-    			if ( $c < $#Akeys ) {
-    				$workline = $withdata;
-    				$key = $Akeys[$c];
-    				$label = $device->{'description'}{'analog'}{$key}{'info'};
-		            ($value, $units, $remark) = $device->AVar( $key );
-		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
-		            ! length( $units ) || ( $value = join( '', $value, '&nbsp;', $units ) ); # Add units to the value
-		            if ( $remark ne '') {
-			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
-			            $value= join( '', $value, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' ); # Add a remark.
-		            }
-		            $workline =~ s/\%number\%/$key/;
-		            $workline =~ s/\%label\%/$label/;
-		            $workline =~ s/\%value\%/$value/;		            
-		            push @outputpage, $workline;  				
-    			} else { push @outputpage, $nodata; }
-     			# ++ Integer variable (if there is one)
-    			if ( $c < $#Ikeys ) {
-    				$workline = $withdata;
-    				$key = $Ikeys[$c];
-    				$label = $device->{'description'}{'integer'}{$key}{'info'};
-		            ($value, $units, $remark) = $device->IVar( $key );
-		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
-		            ! length( $units ) || ( $value = join( '', $value, '&nbsp;', $units ) ); # Add units to the value
-		            if ( $remark ne '') {
-			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
-			            $value= join( '', $value, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' ); # Add a remark.
-		            }
-		            $workline =~ s/\%number\%/$key/;
-		            $workline =~ s/\%label\%/$label/;
-		            $workline =~ s/\%value\%/$value/;		            
-		            push @outputpage, $workline;  				
-    			} else { push @outputpage, $nodata; }
-    			# ++ Terminate the record
-    			push @outputpage, $post;
-    		} # End of for-loop.
+foreach my $device (values  %devices) {
+	
+	my $filename = "$webdir/$device->{'label'}-details.html";
+	
+    if ( ( ! (-e $filename) ) || 
+         ( $mtime_template > (stat($filename)->mtime) ) || 
+         ( $mtime_code > (stat($filename)->mtime) ) ) { $rebuildDetails = 1; }
     		
-    	} else { push @outputpage, $line; }
-    	
-    } # End of the foreach loop iterating over the lines of the webpage template
+}
 
-    # - Finally write the output page.
-    open( $webpageFH, ">", "$webdir/$device->{'label'}-details.html" );
-    print $webpageFH @outputpage;
-    close( $webpageFH );
 
-}  # End of while loop over the devices.
+if ( $rebuildDetails ) {
+	
+    # Read the web template
+    open( my $webtemplateFH, "<", "$codedir/TEMPLATES/details_template.html" ) 
+      or die "Could not open the web template file $codedir/details_template.html";
+    my @webtemplate = <$webtemplateFH>;
+    close( $webtemplateFH );
+    
+    while ( ($devkey, $device) = each %devices ) {
+    
+print "Regenerating $webdir/$device->{'label'}-details.html\n";
+
+        # 
+        # Create the details web page for device $device.
+        #
+        
+        # - Create an empty list as the output structure
+        @outputpage = ( );
+        
+        # - Now process the template and build the output page.
+        foreach $line(@webtemplate) {
+        	
+        	if ( $line =~ /(.*)\%device\%(.*)/ ) {
+        		push @outputpage, $1.$device->{'label'}.$2."\n";
+        	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
+         		push @outputpage, $1.'<span class="dataItem" id="time1L"></span>'.$2."\n";
+        	} elsif ( $line =~ /.*\%dataLines.*/ ) {
+        		# This is the main block of this part of the code where most of the work is done.
+        		# + Parse the command
+        		$line =~ s/\\n/\n/g;
+        		my @cmds = split( '\|\|', $line ); # Should result in a 6-elenment array, the first and the last element aren't really needed.
+        		my $pre      = $cmds[1];
+        		my $post     = $cmds[2];
+        		my $withdata = $cmds[3];
+        		my $nodata   = $cmds[4];
+        		# + Get the keys of each type and sort them numerically.
+        		@Dkeys = sort { $a <=> $b } ( keys %{$device->{'digital'}} );
+         		@Akeys = sort { $a <=> $b } ( keys %{$device->{'analog'}} );
+        		@Ikeys = sort { $a <=> $b } ( keys %{$device->{'integer'}} );
+        		# + Determine the largest of the number of keys of the three variable types.
+        		$max = ( $#Dkeys > $#Akeys ) ? $#Dkeys : $#Akeys;
+        		$max = ( $max > $#Ikeys )    ? $max    : $#Ikeys;
+        		# + Loop over the rows of the table to generate.
+        		for ( my $c = 0; $c < $max; $c++ ) {
+        			# ++ Start of output record
+        			push @outputpage, $pre;
+        			# ++ Digital variable (if there is one)
+        			if ( $c < $#Dkeys ) {
+        				$workline = $withdata;
+        				$key = $Dkeys[$c];
+        				$label = $device->{'description'}{'digital'}{$key}{'info'};
+        				$body = "<span class=\"dataItem\" id=\"D$devkey\_D$key\"></span>";
+     		            ($value, $valtext, $remark) = $device->DVar( $key );         # $value and $valtext are not needed here.
+    		            if ( $remark ne '') {
+    			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+    			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
+    		            }
+    		            $workline =~ s/\%number\%/$key/;
+    		            $workline =~ s/\%label\%/$label/;
+    		            $workline =~ s/\%value\%/$body/;		            
+    		            push @outputpage, $workline;  				
+        			} else { push @outputpage, $nodata; }
+         			# ++ Analog variable (if there is one)
+        			if ( $c < $#Akeys ) {
+        				$workline = $withdata;
+        				$key = $Akeys[$c];
+        				$label = $device->{'description'}{'analog'}{$key}{'info'};
+        				$body = "<span class=\"dataItem\" id=\"D$devkey\_A$key\"></span>";
+    		            ($value, $units, $remark) = $device->AVar( $key );            # $value is not needed here.
+    		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+    		            ! length( $units ) || ( $body = $body.'&nbsp;'.$units );      # Add units to the value (if units are defined)
+    		            if ( $remark ne '') {
+    			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+    			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
+    		            }
+    		            $workline =~ s/\%number\%/$key/;
+    		            $workline =~ s/\%label\%/$label/;
+    		            $workline =~ s/\%value\%/$body/;		            
+    		            push @outputpage, $workline;  				
+        			} else { push @outputpage, $nodata; }
+         			# ++ Integer variable (if there is one)
+        			if ( $c < $#Ikeys ) {
+        				$workline = $withdata;
+        				$key = $Ikeys[$c];
+        				$label = $device->{'description'}{'integer'}{$key}{'info'};
+        				$body = "<span class=\"dataItem\" id=\"D$devkey\_I$key\"></span>";
+    		            ($value, $units, $remark) = $device->IVar( $key );            # $value is not needed here.
+    		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+    		            ! length( $units ) || ( $body = $body.'&nbsp;'.$units );      # Add units to the value (if units are defined)
+    		            if ( $remark ne '') {
+    			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+    			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
+    		            }
+    		            $workline =~ s/\%number\%/$key/;
+    		            $workline =~ s/\%label\%/$label/;
+    		            $workline =~ s/\%value\%/$body/;		            
+    		            push @outputpage, $workline;  				
+        			} else { push @outputpage, $nodata; }
+        			# ++ Terminate the record
+        			push @outputpage, $post;
+        		} # End of for-loop.
+        		
+        	} else { push @outputpage, $line; }
+        	
+        } # End of the foreach loop iterating over the lines of the webpage template
+    
+        # - Finally write the output page.
+        open( $webpageFH, ">", "$webdir/$device->{'label'}-details.html" );
+        print $webpageFH @outputpage;
+        close( $webpageFH );
+    
+    }  # End of while loop over the devices.
+
+}  # End of if ( rebuildDetails )
 
 
 #
