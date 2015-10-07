@@ -180,7 +180,7 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 #
 # Introduce some problems for debug purposes.
 #
-my $debug = 1;
+my $debug = 0;
 if ( $debug == 1 ) {
     $chiller02data->{'digital'}{24}  = 1;
 	$chiller04data->{'digital'}{102} = 1;
