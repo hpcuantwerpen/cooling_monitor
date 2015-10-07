@@ -149,38 +149,8 @@ $ahu04data = ahuAD->New( "10.28.243.234", 4, "ahu04" );
 $ahu05data = ahuAD->New( "10.28.243.234", 5, "ahu05" );
 
 # Set the time stamp of the data capture,
-#$timestamp = strftime( "%y%m%d-%H%M",   localtime );  # Time stamp used for the web page.
-$timestampL = strftime( "%c",           localtime );  # Time stamp used for the web page.
+$timestampL = strftime( "%c",           localtime );  # Time stamp used for the web page in thelocal time zone.
 $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
-
-#
-# Create the log files for the graphs.
-#
-$chiller01data->Log( "$datadir/chiller01.data" );
-$chiller02data->Log( "$datadir/chiller02.data" );
-$chiller04data->Log( "$datadir/chiller04.data" );
-$cooler01data->Log( "$datadir/cooler01.data" );
-$cooler02data->Log( "$datadir/cooler02.data" );
-$ahu01data->Log( "$datadir/ahu01.data" );
-$ahu02data->Log( "$datadir/ahu02.data" );
-$ahu03data->Log( "$datadir/ahu03.data" );
-$ahu04data->Log( "$datadir/ahu04.data" );
-$ahu05data->Log( "$datadir/ahu05.data" );
-
-#
-# Create full log files in case we ever need more data.
-# These files are created per month.
-#
-$chiller01data->FullLog( $datadir );
-$chiller02data->FullLog( $datadir );
-$chiller04data->FullLog( $datadir );
-$cooler01data->FullLog( $datadir );
-$cooler02data->FullLog( $datadir );
-#$ahu01data->FullLog( $datadir );
-#$ahu02data->FullLog( $datadir );
-$ahu03data->FullLog( $datadir );
-$ahu04data->FullLog( $datadir );
-$ahu05data->FullLog( $datadir );
 
 #
 # Generate the device list hash
@@ -207,12 +177,6 @@ $ahu05data->FullLog( $datadir );
   25 => "graphs.html#AHU"
 );
 
-# Also create a hash with the number corresponding to each device label for sorting.
-%deviceOrder = ( );
-while ( ($key, $device) = each %devices ) {
-    $deviceOrder{$device->{'label'}} = $key;
-} 
-
 #
 # Introduce some problems for debug purposes.
 #
@@ -227,99 +191,63 @@ if ( $debug == 1 ) {
 
 #
 #
-# Build the list of alarm string
-#
-#
-
-@alarmMssgs = () ; # an array, each entry is a hash with three keys: source, message and level.
-foreach my $workdevice (values %devices ) {
-	push @alarmMssgs, $workdevice->AlarmMssgs();
-}
-# Sort the message first according to how critical they are, then according to the device order.
-@alarmMssgs = sort { (($res = ($a->{level} cmp $b->{level})) == 0) ? ($deviceOrder{$a->{source}} <=> $deviceOrder{$b->{source}}) : $res } @alarmMssgs ;
-
-#
-#
 # Generate the raw data page
 #
 #
 
-#open( my $webtemplateFH, "<", "$codedir/TEMPLATES/datapage_header_template.html" ) 
-#  or die "Could not open the web template file $codedir/datapage_header_template.html";
-#my @outputpage = <$webtemplateFH>;
-#close( $webtemplateFH );
+generate_rawdata( \%devices, $webdir );
 
-my @outputpage = ( );
 
-# Add the time stamp
-push @outputpage, "<div id=\"RD_time2L\">$timestampL<br>$timestampZ</div>\n";
-push @outputpage, "<div id=\"RD_time1L\">$timestampL ($timestampZ)</div>\n";
+#
+# Create the log files for the graphs.
+#
+$chiller01data->Log( "$datadir/chiller01.data" );
+$chiller02data->Log( "$datadir/chiller02.data" );
+$chiller04data->Log( "$datadir/chiller04.data" );
+$cooler01data->Log( "$datadir/cooler01.data" );
+$cooler02data->Log( "$datadir/cooler02.data" );
+$ahu01data->Log( "$datadir/ahu01.data" );
+$ahu02data->Log( "$datadir/ahu02.data" );
+$ahu03data->Log( "$datadir/ahu03.data" );
+$ahu04data->Log( "$datadir/ahu04.data" );
+$ahu05data->Log( "$datadir/ahu05.data" );
 
-# Add the alarm strings.
-push @outputpage, "<div id=\"RD_alarms\">\n";
-for my $c1 (0 .. $#alarmMssgs) {
-    $spanclass = $alarmMssgs[$c1]{'level'};
-    $spanclass =~ s/\-//;
-    push @outputpage, "  <span class=ConsoleMssg${spanclass}>$alarmMssgs[$c1]{source}: $alarmMssgs[$c1]{message}</span>" . 
-                      ( ($c1 < $#alarmMssgs) ? "<br/>\n" : "\n") ;
-}
-push @outputpage, "</div>\n";
+#
+#
+# Generate the plots with gnuplot
+#
+#
 
-foreach my $devkey ( sort {$a <=> $b} keys %devices ) {
+# First we read the GNUplot commands.
+open(my $gnuplotCMDS, "<", "$codedir/TEMPLATES/plotcmds_template.gnuplot" );
+my @plotcmds = <$gnuplotCMDS> ;
+close( $gnuplotCMDS );
 
-	my $device = $devices{$devkey};
+# Overwrite the defintions of datadir and webdir in the template as they are 
+# there for testing purposes.
+map { s/datadir =.*/datadir = \"$datadir\"/ ; 
+	  s/webdir *=.*/webdir  = \"$webdir\"/ ;
+	  $_ } @plotcmds;
+	  
+# Now send the commands to GNUplot.
+open( my $gnuplotPipe, "| gnuplot" ) || die "Failed to send commands to GNUplot." ;
+print $gnuplotPipe @plotcmds ;
+close( $gnuplotPipe );
 
-    push @outputpage, join( '', "<div>Variables for device ", $device->{'label'}, "\n" );
-    
-    # Device status
-    $status = $device->Status( );
-    $class = $status ; $class =~ s/\-//;
-    push @outputpage, "  <div id=\"RD\_D$devkey\_SV\">$status</div>\n";
-    
-    
-    # Do the digital variables
-    push @outputpage, "  <div>Digital variables\n";
-    foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'digital'} } ) { 
-    	$label = "RD\_D$devkey\_D$mykey";
-    	($value, $valtext, $remark) = $device->DVar( $mykey ); # In fact, we don't need $remark here...
-    	! length( $valtext ) || ( $value = join( '', $value, ' - ', $valtext ) ); # Add textual value
-    	push @outputpage, "    <div id=\"$label\">$value</div>\n";
-    }    
-    push @outputpage, "  </div>\n";
-    
-    # Do the analog variables
-    push @outputpage, "  <div>Analog variables\n";
-    foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'analog'} } ) { 
-    	$label = "RD\_D$devkey\_A$mykey";
-    	($value, $units, $remark) = $device->AVar( $mykey ); # In fact, we don't need $units and $remark here...
-    	push @outputpage, "    <div id=\"$label\">$value</div>\n";
-    }    
-    push @outputpage, "  </div>\n";
-    
-    # Do the integer variables
-    push @outputpage, "  <div>Integer variables\n";
-    foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'integer'} } ) { 
-    	$label = "RD\_D$devkey\_I$mykey";
-    	($value, $units, $remark) = $device->IVar( $mykey ); # In fact, we don't need $units and $remark here...
-    	push @outputpage, "    <div id=\"$label\">$value</div>\n";
-    }    
-    push @outputpage, " </div>\n";
-    
-    # Set the expiration time
-    $timestampExp = strftime( "%Y-%m-%dT%H:%M:%SZ", 
-                              gmtime( time() + $dataValid ) );     # Time stamp in Zulu time in the format for JS date.Parse
-    push @outputpage, "  <div id=\"RD_Expiration\">$timestampExp</div>\n";
-    
-    push @outputpage, "</div>\n"; 
-
-}  # End of while loop over all devices.
-
-#push @outputpage, "</body>\n</html>\n";
-
-open( $webpageFH, ">", "$webdir/rawdata.txt" );
-print $webpageFH @outputpage;
-close( $webpageFH );
-
+#
+# Create full log files in case we ever need more data.
+# These files are created per month.
+#
+$chiller01data->FullLog( $datadir );
+$chiller02data->FullLog( $datadir );
+$chiller04data->FullLog( $datadir );
+$cooler01data->FullLog( $datadir );
+$cooler02data->FullLog( $datadir );
+#$ahu01data->FullLog( $datadir );
+#$ahu02data->FullLog( $datadir );
+$ahu03data->FullLog( $datadir );
+$ahu04data->FullLog( $datadir );
+$ahu05data->FullLog( $datadir );
 
 #
 #
@@ -334,95 +262,13 @@ if ( ( ! (-e "$webdir/index.html") ) ||
      ( $mtime_template > (stat("$webdir/index.html")->mtime) ) || 
      ( $mtime_code > (stat("$webdir/index.html")->mtime) ) ) {
 
-print "Regenerating the index.html file.\n";
-
-    my @outputpage = () ;
-    
-    open( my $webtemplate, "<", "$codedir/TEMPLATES/monitor_template.html" ) 
-      or die "Could not open the web template file $codedir/monitor_template.html";
-    
-    while ($line = <$webtemplate>) {
-    	# Note that for simplicity we assume that the HTML contains only one
-    	# %status%, %avar% or %dvar% command per line.
-    	if ( $line =~ /(.*)\%avar\((\d+),(\d+)\)\%(.*)/ ) {
-    		$pre    = $1;
-    		# $devnum = $2;   # Commented out to reduce data copying as the values remain valid until they are used anyway.
-    		# $varnum = $3;
-    		$post   = $4;
-    		$body = "<span class=\"dataItem\" id=\"D$2\_A$3\"></span>";
-    		($value, $units, $remark) = $devices{$2}->AVar( $3 );    # $value is not needed here.
-    		#if ( $units ne '') { $body = $body.'&nbsp;'.$units; }
-    		! length( $units ) || ( $body = $body.'&nbsp;'.$units ); # Trick from a Perl book, should be more efficient than the above if.
-    		if ( $remark ne '') {
-    			$pre =~ s/\"data\"/\"data dataRemark\"/g;
-    			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
-    		}
-    		push @outputpage, $pre.$body.$post."\n";
-    	}
-    	elsif ( $line =~ /(.*)\%ivar\((\d+),(\d+)\)\%(.*)/ ) {
-    		$pre    = $1;
-    		# $devnum = $2;
-    		# $varnum = $3;
-    		$post   = $4;
-    		$body = "<span class=\"dataItem\" id=\"D$2\_I$3\"></span>";
-    		($value, $units, $remark) = $devices{$2}->IVar( $3 );    # $value is not needed here.
-    		#if ( $units ne '') { $body = $body.'&nbsp;'.$units; }
-    		! length( $units ) || ( $body = $body.'&nbsp;'.$units );
-    		if ( $remark ne '') {
-    			$pre =~ s/\"data\"/\"data dataRemark\"/g;
-    			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
-    		}
-    		push @outputpage, $pre.$body.$post."\n";
-    	}
-    	elsif ( $line =~ /(.*)\%dvar\((\d+),(\d+)\)\%(.*)/ ) {
-    		$pre    = $1;
-    		# $devnum = $2;
-    		# $varnum = $3;
-    		$post   = $4;
-    		$body = "<span class=\"dataItem\" id=\"D$2\_D$3\"></span>";
-    		($body, $valtext, $remark) = $devices{$2}->DVar( $3 );   # $value and $valtext are not needed here.
-    		if ( $remark ne '') {
-    			$pre =~ s/\"data\"/\"data dataRemark\"/g;
-    			$body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>';
-    		}
-    		#$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
-    		push @outputpage, $pre.$body.$post."\n";
-    	}
-    	elsif ( $line =~ /^( *)(.*)\%status\((\d+)\)\%(.*)/ ) {
-    		# We assume 4 possible values for status: Normal, Non-Critical, Critical and Off.
-    		$spaces    = $1;
-    		$startline = $2;
-    		$devnum    = $3;
-    		$endline   = $4;
-    		$status = "<span class=\"statusItem\" id=\"D$3\_SV\"></span>";
-    		$replace = "$spaces  <button class=\"StatusButtonNormal\" onclick=\"parent.location='$devices{$devnum}->{'label'}-details.html'\">$status<\/button><br/>\n".
-    		           "$spaces  <img src=\"48px-line_chart_icon.png\"  onclick=\"parent.location='$links{$devnum}'\">&nbsp;&nbsp;\n" . 
-    		           "$spaces  <img src=\"48px-table_icon.png\"       onclick=\"parent.location='$devices{$devnum}->{'label'}-details.html'\">\n";
-    		$line = $spaces.$startline."\n".$replace.$spaces.$endline."\n";
-    		push @outputpage, $line;
-    	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
-        	push @outputpage, $1.'<span class="dataItem" id="time2L"></span>'.$2."\n";
-    	} elsif ( $line =~ /.*\%AlarmMssgs\%.*/ ) {
-    		# We do assume that there is only a %AlarmMssgs% on that line in the HTML file, but we will
-    		# prepend each line of the output with the correct number of spaces that was also used in the
-    		# template.
-    		$subst = '<span class="dataItem" id="alarms"></span>';
-    		$line =~ s/\%AlarmMssgs\%/$subst/;
-    		push @outputpage, $line;
-    	} else { push @outputpage, $line; }
-    };
-    
-    close( $webtemplate );
-    
-    open( $webpageFH, ">", "$webdir/index.html" );
-    print $webpageFH @outputpage;
-    close( $webpageFH );
+    generate_monitor_root( \%devices, \%links, $codedir, $webdir );
     
 } # End of the re-generation of the index web page.
 
 #
 #
-# Generate the details web pages
+# Re-generate the details web pages
 #
 #
 
@@ -454,136 +300,12 @@ if ( $rebuildDetails ) {
     close( $webtemplateFH );
     
     while ( ($devkey, $device) = each %devices ) {
-    
-print "Regenerating $webdir/$device->{'label'}-details.html\n";
-
-        # 
-        # Create the details web page for device $device.
-        #
-        
-        # - Create an empty list as the output structure
-        @outputpage = ( );
-        
-        # - Now process the template and build the output page.
-        foreach $line(@webtemplate) {
-        	
-        	if ( $line =~ /(.*)\%device\%(.*)/ ) {
-        		push @outputpage, $1.$device->{'label'}.$2."\n";
-        	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
-         		push @outputpage, $1.'<span class="dataItem" id="time1L"></span>'.$2."\n";
-        	} elsif ( $line =~ /.*\%dataLines.*/ ) {
-        		# This is the main block of this part of the code where most of the work is done.
-        		# + Parse the command
-        		$line =~ s/\\n/\n/g;
-        		my @cmds = split( '\|\|', $line ); # Should result in a 6-elenment array, the first and the last element aren't really needed.
-        		my $pre      = $cmds[1];
-        		my $post     = $cmds[2];
-        		my $withdata = $cmds[3];
-        		my $nodata   = $cmds[4];
-        		# + Get the keys of each type and sort them numerically.
-        		@Dkeys = sort { $a <=> $b } ( keys %{$device->{'digital'}} );
-         		@Akeys = sort { $a <=> $b } ( keys %{$device->{'analog'}} );
-        		@Ikeys = sort { $a <=> $b } ( keys %{$device->{'integer'}} );
-        		# + Determine the largest of the number of keys of the three variable types.
-        		$max = ( $#Dkeys > $#Akeys ) ? $#Dkeys : $#Akeys;
-        		$max = ( $max > $#Ikeys )    ? $max    : $#Ikeys;
-        		# + Loop over the rows of the table to generate.
-        		for ( my $c = 0; $c < $max; $c++ ) {
-        			# ++ Start of output record
-        			push @outputpage, $pre;
-        			# ++ Digital variable (if there is one)
-        			if ( $c < $#Dkeys ) {
-        				$workline = $withdata;
-        				$key = $Dkeys[$c];
-        				$label = $device->{'description'}{'digital'}{$key}{'info'};
-        				$body = "<span class=\"dataItem\" id=\"D$devkey\_D$key\"></span>";
-     		            ($value, $valtext, $remark) = $device->DVar( $key );         # $value and $valtext are not needed here.
-    		            if ( $remark ne '') {
-    			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
-    			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
-    		            }
-    		            $workline =~ s/\%number\%/$key/;
-    		            $workline =~ s/\%label\%/$label/;
-    		            $workline =~ s/\%value\%/$body/;		            
-    		            push @outputpage, $workline;  				
-        			} else { push @outputpage, $nodata; }
-         			# ++ Analog variable (if there is one)
-        			if ( $c < $#Akeys ) {
-        				$workline = $withdata;
-        				$key = $Akeys[$c];
-        				$label = $device->{'description'}{'analog'}{$key}{'info'};
-        				$body = "<span class=\"dataItem\" id=\"D$devkey\_A$key\"></span>";
-    		            ($value, $units, $remark) = $device->AVar( $key );            # $value is not needed here.
-    		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
-    		            ! length( $units ) || ( $body = $body.'&nbsp;'.$units );      # Add units to the value (if units are defined)
-    		            if ( $remark ne '') {
-    			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
-    			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
-    		            }
-    		            $workline =~ s/\%number\%/$key/;
-    		            $workline =~ s/\%label\%/$label/;
-    		            $workline =~ s/\%value\%/$body/;		            
-    		            push @outputpage, $workline;  				
-        			} else { push @outputpage, $nodata; }
-         			# ++ Integer variable (if there is one)
-        			if ( $c < $#Ikeys ) {
-        				$workline = $withdata;
-        				$key = $Ikeys[$c];
-        				$label = $device->{'description'}{'integer'}{$key}{'info'};
-        				$body = "<span class=\"dataItem\" id=\"D$devkey\_I$key\"></span>";
-    		            ($value, $units, $remark) = $device->IVar( $key );            # $value is not needed here.
-    		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
-    		            ! length( $units ) || ( $body = $body.'&nbsp;'.$units );      # Add units to the value (if units are defined)
-    		            if ( $remark ne '') {
-    			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
-    			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
-    		            }
-    		            $workline =~ s/\%number\%/$key/;
-    		            $workline =~ s/\%label\%/$label/;
-    		            $workline =~ s/\%value\%/$body/;		            
-    		            push @outputpage, $workline;  				
-        			} else { push @outputpage, $nodata; }
-        			# ++ Terminate the record
-        			push @outputpage, $post;
-        		} # End of for-loop.
-        		
-        	} else { push @outputpage, $line; }
-        	
-        } # End of the foreach loop iterating over the lines of the webpage template
-    
-        # - Finally write the output page.
-        open( $webpageFH, ">", "$webdir/$device->{'label'}-details.html" );
-        print $webpageFH @outputpage;
-        close( $webpageFH );
-    
+        generate_detail_page( \@webtemplate, $device, $devkey, $webdir );
     }  # End of while loop over the devices.
 
 }  # End of if ( rebuildDetails )
 
 
-#
-#
-# Generate the plots with gnuplot
-#
-#
-
-# First we read the GNUplot commands.
-open(my $gnuplotCMDS, "<", "$codedir/TEMPLATES/plotcmds_template.gnuplot" );
-my @plotcmds = <$gnuplotCMDS> ;
-close( $gnuplotCMDS );
-
-# Overwrite the defintions of datadir and webdir in the template as they are 
-# there for testing purposes.
-map { s/datadir =.*/datadir = \"$datadir\"/ ; 
-	  s/webdir *=.*/webdir  = \"$webdir\"/ ;
-	  $_ } @plotcmds;
-	  
-# Now send the commands to GNUplot.
-open( my $gnuplotPipe, "| gnuplot" ) || die "Failed to send commands to GNUplot." ;
-print $gnuplotPipe @plotcmds ;
-close( $gnuplotPipe );
-
-#
 #
 # Check the web directory and copy other web files (from the WEB subdirectory of 
 # the code) to that directory if needed.
@@ -592,12 +314,13 @@ close( $gnuplotPipe );
 #
 
 if ( ( ! (-e "$webdir/graphs.html") ) || 
-     ( (stat("$codedir/WEB/graphs.html")->mtime) > (stat("$webdir/graphs.html")->mtime) ) ) {
+     ( (stat("$codedir/WEB/graphs.html")->mtime) > (stat("$webdir/graphs.html")->mtime) ) || 
+     ( $mtime_code > (stat("$webdir/graphs.html")->mtime) ) ) {
 	# Copy the files in the WEB subdirectory of the code to the web server directory.
 	# We could name them one by one, but then we should not forget to adapt this bit of 
 	# code when we add files. 
 	# This loop is more robust.
-print "Updating web pages from WEB subdirectory.\n";
+    # print "Updating web pages from WEB subdirectory.\n";
 	opendir( DIR, "$codedir/WEB" );
 	my @filestocopy = readdir( DIR );
 	closedir( DIR );
@@ -627,6 +350,14 @@ exit( 0 );
 #
 #
 
+
+################################################################################
+################################################################################
+#
+# Print help.
+#
+#
+
 sub print_help {
 
 	print "Options:\n";
@@ -635,5 +366,335 @@ sub print_help {
     print "* -I or --interval NUMBER: Time that the data should remain valid in seconds.\n";
     print "* -H or --help: Display this help and quit.\n\n";
 
+}
+
+
+################################################################################
+################################################################################
+#
+# Generate the raw data page.
+#
+#
+
+sub generate_rawdata {
+	
+	my $devices = $_[0];  # This is a reference!
+	my $webdir  = $_[1];
+	
+	#
+	# First build the alarm strings.
+	#
+	
+	# Also create a hash with the number corresponding to each device label for sorting.
+    my %deviceOrder = ( );
+    while ( ($key, $device) = each %$devices ) {
+        $deviceOrder{$device->{'label'}} = $key;
+    } 
+	
+    # Get the alarm strings
+	my @alarmMssgs = () ; # an array, each entry is a hash with three keys: source, message and level.
+    foreach my $workdevice (values %$devices ) {
+	    push @alarmMssgs, $workdevice->AlarmMssgs();
+    }
+    
+    # Sort the message first according to how critical they are, then according to the device order.
+    @alarmMssgs = sort { (($res = ($a->{level} cmp $b->{level})) == 0) ? ($deviceOrder{$a->{source}} <=> $deviceOrder{$b->{source}}) : $res } @alarmMssgs ;
+	
+	#
+	# Now we an build the web page.
+	#
+    
+    my @outputpage = ( );
+    
+    # Add the time stamp
+    push @outputpage, "<div id=\"RD_time2L\">$timestampL<br>$timestampZ</div>\n";
+    push @outputpage, "<div id=\"RD_time1L\">$timestampL ($timestampZ)</div>\n";
+    
+    # Add the alarm strings.
+    push @outputpage, "<div id=\"RD_alarms\">\n";
+    for my $c1 (0 .. $#alarmMssgs) {
+        $spanclass = $alarmMssgs[$c1]{'level'};
+        $spanclass =~ s/\-//;
+        push @outputpage, "  <span class=ConsoleMssg${spanclass}>$alarmMssgs[$c1]{source}: $alarmMssgs[$c1]{message}</span>" . 
+                          ( ($c1 < $#alarmMssgs) ? "<br/>\n" : "\n") ;
+    }
+    push @outputpage, "</div>\n";
+    
+    foreach my $devkey ( sort {$a <=> $b} keys %$devices ) {
+    
+    	my $device = $devices->{$devkey};
+    
+        push @outputpage, join( '', "<div>Variables for device ", $device->{'label'}, "\n" );
+        
+        # Device status
+        $status = $device->Status( );
+        $class = $status ; $class =~ s/\-//;
+        push @outputpage, "  <div id=\"RD\_D$devkey\_SV\">$status</div>\n";
+        
+        
+        # Do the digital variables
+        push @outputpage, "  <div>Digital variables\n";
+        foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'digital'} } ) { 
+        	$label = "RD\_D$devkey\_D$mykey";
+        	($value, $valtext, $remark) = $device->DVar( $mykey ); # In fact, we don't need $remark here...
+        	! length( $valtext ) || ( $value = join( '', $value, ' - ', $valtext ) ); # Add textual value
+        	push @outputpage, "    <div id=\"$label\">$value</div>\n";
+        }    
+        push @outputpage, "  </div>\n";
+        
+        # Do the analog variables
+        push @outputpage, "  <div>Analog variables\n";
+        foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'analog'} } ) { 
+        	$label = "RD\_D$devkey\_A$mykey";
+        	($value, $units, $remark) = $device->AVar( $mykey ); # In fact, we don't need $units and $remark here...
+        	push @outputpage, "    <div id=\"$label\">$value</div>\n";
+        }    
+        push @outputpage, "  </div>\n";
+        
+        # Do the integer variables
+        push @outputpage, "  <div>Integer variables\n";
+        foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'integer'} } ) { 
+        	$label = "RD\_D$devkey\_I$mykey";
+        	($value, $units, $remark) = $device->IVar( $mykey ); # In fact, we don't need $units and $remark here...
+        	push @outputpage, "    <div id=\"$label\">$value</div>\n";
+        }    
+        push @outputpage, " </div>\n";
+        
+        # Set the expiration time
+        $timestampExp = strftime( "%Y-%m-%dT%H:%M:%SZ", 
+                                  gmtime( time() + $dataValid ) );     # Time stamp in Zulu time in the format for JS date.Parse
+        push @outputpage, "  <div id=\"RD_Expiration\">$timestampExp</div>\n";
+        
+        push @outputpage, "</div>\n"; 
+    
+    }  # End of while loop over all devices.
+    
+    #push @outputpage, "</body>\n</html>\n";
+    
+    open( my $webpageFH, ">", "$webdir/rawdata.txt" );
+    print $webpageFH @outputpage;
+    close( $webpageFH );
+	
+} # end of generate_rawdata
+
+
+################################################################################
+################################################################################
+#
+# Rebuild index.html.
+#
+#
+
+sub generate_monitor_root( ) {
+	
+    my $devices = shift;  # This is a reference! 
+    my $links   = shift;  # This is a reference! 
+	my $codedir = shift;
+	my $webdir  = shift;
+	
+    #print "Regenerating the index.html file.\n";
+
+    my @outputpage = () ;
+    
+    open( my $webtemplate, "<", "$codedir/TEMPLATES/monitor_template.html" ) 
+      or die "Could not open the web template file $codedir/monitor_template.html";
+    
+    while ($line = <$webtemplate>) {
+    	# Note that for simplicity we assume that the HTML contains only one
+    	# %status%, %avar% or %dvar% command per line.
+    	if ( $line =~ /(.*)\%avar\((\d+),(\d+)\)\%(.*)/ ) {
+    		$pre    = $1;
+    		# $devnum = $2;   # Commented out to reduce data copying as the values remain valid until they are used anyway.
+    		# $varnum = $3;
+    		$post   = $4;
+    		$body = "<span class=\"dataItem\" id=\"D$2\_A$3\"></span>";
+    		($value, $units, $remark) = $devices->{$2}->AVar( $3 );    # $value is not needed here.
+    		#if ( $units ne '') { $body = $body.'&nbsp;'.$units; }
+    		! length( $units ) || ( $body = $body.'&nbsp;'.$units ); # Trick from a Perl book, should be more efficient than the above if.
+    		if ( $remark ne '') {
+    			$pre =~ s/\"data\"/\"data dataRemark\"/g;
+    			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
+    		}
+    		push @outputpage, $pre.$body.$post."\n";
+    	}
+    	elsif ( $line =~ /(.*)\%ivar\((\d+),(\d+)\)\%(.*)/ ) {
+    		$pre    = $1;
+    		# $devnum = $2;
+    		# $varnum = $3;
+    		$post   = $4;
+    		$body = "<span class=\"dataItem\" id=\"D$2\_I$3\"></span>";
+    		($value, $units, $remark) = $devices->{$2}->IVar( $3 );    # $value is not needed here.
+    		#if ( $units ne '') { $body = $body.'&nbsp;'.$units; }
+    		! length( $units ) || ( $body = $body.'&nbsp;'.$units );
+    		if ( $remark ne '') {
+    			$pre =~ s/\"data\"/\"data dataRemark\"/g;
+    			$body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
+    		}
+    		push @outputpage, $pre.$body.$post."\n";
+    	}
+    	elsif ( $line =~ /(.*)\%dvar\((\d+),(\d+)\)\%(.*)/ ) {
+    		$pre    = $1;
+    		# $devnum = $2;
+    		# $varnum = $3;
+    		$post   = $4;
+    		$body = "<span class=\"dataItem\" id=\"D$2\_D$3\"></span>";
+    		($value, $valtext, $remark) = $devices->{$2}->DVar( $3 );   # $value and $valtext are not needed here.
+    		if ( $remark ne '') {
+    			$pre =~ s/\"data\"/\"data dataRemark\"/g;
+    			$body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>';
+    		}
+    		#$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
+    		push @outputpage, $pre.$body.$post."\n";
+    	}
+    	elsif ( $line =~ /^( *)(.*)\%status\((\d+)\)\%(.*)/ ) {
+    		# We assume 4 possible values for status: Normal, Non-Critical, Critical and Off.
+    		$spaces    = $1;
+    		$startline = $2;
+    		$devnum    = $3;
+    		$endline   = $4;
+    		$status = "<span class=\"statusItem\" id=\"D$3\_SV\"></span>";
+    		$replace = "$spaces  <button class=\"StatusButtonNormal\" onclick=\"parent.location='$devices->{$devnum}->{'label'}-details.html'\">$status<\/button><br/>\n".
+    		           "$spaces  <img src=\"48px-line_chart_icon.png\"  onclick=\"parent.location='$links->{$devnum}'\">&nbsp;&nbsp;\n" . 
+    		           "$spaces  <img src=\"48px-table_icon.png\"       onclick=\"parent.location='$devices->{$devnum}->{'label'}-details.html'\">\n";
+    		$line = $spaces.$startline."\n".$replace.$spaces.$endline."\n";
+    		push @outputpage, $line;
+    	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
+        	push @outputpage, $1.'<span class="dataItem" id="time2L"></span>'.$2."\n";
+    	} elsif ( $line =~ /.*\%AlarmMssgs\%.*/ ) {
+    		# We do assume that there is only a %AlarmMssgs% on that line in the HTML file, but we will
+    		# prepend each line of the output with the correct number of spaces that was also used in the
+    		# template.
+    		$subst = '<span class="dataItem" id="alarms"></span>';
+    		$line =~ s/\%AlarmMssgs\%/$subst/;
+    		push @outputpage, $line;
+    	} else { push @outputpage, $line; }
+    };
+    
+    close( $webtemplate );
+    
+    open( $webpageFH, ">", "$webdir/index.html" );
+    print $webpageFH @outputpage;
+    close( $webpageFH );
+    
+}  # End of generate_monitor_root
+
+
+
+
+################################################################################
+################################################################################
+#
+# Rebuild a details page.
+#
+#
+
+sub generate_detail_page(  ) {
+	
+    my $webtemplate = shift;  # Reference!
+    my $device      = shift;
+    my $devkey      = shift;
+    my $webdir      = shift; 
+    
+    #print "Regenerating $webdir/$device->{'label'}-details.html\n";
+
+    # 
+    # Create the details web page for device $device.
+    #
+        
+    # - Create an empty list as the output structure
+    @outputpage = ( );
+        
+    # - Now process the template and build the output page.
+    foreach $line(@$webtemplate) {
+    	
+    	if ( $line =~ /(.*)\%device\%(.*)/ ) {
+    		push @outputpage, $1.$device->{'label'}.$2."\n";
+    	} elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
+     		push @outputpage, $1.'<span class="dataItem" id="time1L"></span>'.$2."\n";
+    	} elsif ( $line =~ /.*\%dataLines.*/ ) {
+    		# This is the main block of this part of the code where most of the work is done.
+    		# + Parse the command
+    		$line =~ s/\\n/\n/g;
+    		my @cmds = split( '\|\|', $line ); # Should result in a 6-elenment array, the first and the last element aren't really needed.
+    		my $pre      = $cmds[1];
+    		my $post     = $cmds[2];
+    		my $withdata = $cmds[3];
+    		my $nodata   = $cmds[4];
+    		# + Get the keys of each type and sort them numerically.
+    		@Dkeys = sort { $a <=> $b } ( keys %{$device->{'digital'}} );
+     		@Akeys = sort { $a <=> $b } ( keys %{$device->{'analog'}} );
+    		@Ikeys = sort { $a <=> $b } ( keys %{$device->{'integer'}} );
+    		# + Determine the largest of the number of keys of the three variable types.
+    		$max = ( $#Dkeys > $#Akeys ) ? $#Dkeys : $#Akeys;
+    		$max = ( $max > $#Ikeys )    ? $max    : $#Ikeys;
+    		# + Loop over the rows of the table to generate.
+    		for ( my $c = 0; $c < $max; $c++ ) {
+    			# ++ Start of output record
+    			push @outputpage, $pre;
+    			# ++ Digital variable (if there is one)
+    			if ( $c < $#Dkeys ) {
+    				$workline = $withdata;
+    				$key = $Dkeys[$c];
+    				$label = $device->{'description'}{'digital'}{$key}{'info'};
+    				$body = "<span class=\"dataItem\" id=\"D$devkey\_D$key\"></span>";
+ 		            ($value, $valtext, $remark) = $device->DVar( $key );         # $value and $valtext are not needed here.
+		            if ( $remark ne '') {
+			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
+		            }
+		            $workline =~ s/\%number\%/$key/;
+		            $workline =~ s/\%label\%/$label/;
+		            $workline =~ s/\%value\%/$body/;		            
+		            push @outputpage, $workline;  				
+    			} else { push @outputpage, $nodata; }
+     			# ++ Analog variable (if there is one)
+    			if ( $c < $#Akeys ) {
+    				$workline = $withdata;
+    				$key = $Akeys[$c];
+    				$label = $device->{'description'}{'analog'}{$key}{'info'};
+    				$body = "<span class=\"dataItem\" id=\"D$devkey\_A$key\"></span>";
+		            ($value, $units, $remark) = $device->AVar( $key );            # $value is not needed here.
+		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+		            ! length( $units ) || ( $body = $body.'&nbsp;'.$units );      # Add units to the value (if units are defined)
+		            if ( $remark ne '') {
+			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
+		            }
+		            $workline =~ s/\%number\%/$key/;
+		            $workline =~ s/\%label\%/$label/;
+		            $workline =~ s/\%value\%/$body/;		            
+		            push @outputpage, $workline;  				
+    			} else { push @outputpage, $nodata; }
+     			# ++ Integer variable (if there is one)
+    			if ( $c < $#Ikeys ) {
+    				$workline = $withdata;
+    				$key = $Ikeys[$c];
+    				$label = $device->{'description'}{'integer'}{$key}{'info'};
+    				$body = "<span class=\"dataItem\" id=\"D$devkey\_I$key\"></span>";
+		            ($value, $units, $remark) = $device->IVar( $key );            # $value is not needed here.
+		            #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+		            ! length( $units ) || ( $body = $body.'&nbsp;'.$units );      # Add units to the value (if units are defined)
+		            if ( $remark ne '') {
+			            $workline =~ s/\"data\"/\"data dataRemark\"/g;
+			            $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
+		            }
+		            $workline =~ s/\%number\%/$key/;
+		            $workline =~ s/\%label\%/$label/;
+		            $workline =~ s/\%value\%/$body/;		            
+ 		            push @outputpage, $workline;  				
+    			} else { push @outputpage, $nodata; }
+    			# ++ Terminate the record
+    			push @outputpage, $post;
+    		} # End of for-loop.
+        		
+    	} else { push @outputpage, $line; }
+        	
+    } # End of the foreach loop iterating over the lines of the webpage template
+    
+    # - Finally write the output page.
+    open( $webpageFH, ">", "$webdir/$device->{'label'}-details.html" );
+    print $webpageFH @outputpage;
+    close( $webpageFH );
+ 
 }
 
