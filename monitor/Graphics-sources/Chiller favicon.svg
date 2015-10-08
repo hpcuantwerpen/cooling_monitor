@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="512"
+   height="512"
+   id="svg3049"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="Chiller favicon.svg"
+   inkscape:export-filename="/Users/KLust/Desktop/Chiller favicon.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs3051" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="239.92577"
+     inkscape:cy="309.46712"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1702"
+     inkscape:window-height="1111"
+     inkscape:window-x="350"
+     inkscape:window-y="46"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata3054">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Laag 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-540.36218)">
+    <g
+       transform="matrix(0.5,0,0,0.5,69.07857,553.16033)"
+       id="layer1-0">
+      <path
+         inkscape:connector-curvature="0"
+         d="M 10.044707,10.527179 9.0311184,382.51431 c -2.0271779,346.26715 585.8543916,357.06722 584.8408016,0 l 1.01359,-371.987131 -71.96481,0 1.01359,371.987131 c 0.39007,237.41435 -372.44921,239.33745 -371.98713,0 l 3.04076,-371.987131 -144.943213,0 z"
+         id="path3910"
+         style="fill:#7e002f;fill-opacity:1;fill-rule:evenodd;stroke:#7e002f;stroke-width:4.05435562px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="100%"
+         x="422.74884"
+         y="84.837509"
+         id="text3311"
+         xml:space="preserve"
+         style="font-size:48px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"><tspan
+           x="422.74884"
+           y="84.837509"
+           id="tspan3313" /></text>
+      <text
+         sodipodi:linespacing="100%"
+         x="333.72916"
+         y="199.9949"
+         id="text3501"
+         xml:space="preserve"
+         style="font-size:22px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"><tspan
+           x="333.72916"
+           y="199.9949"
+           id="tspan3503" /></text>
+      <path
+         inkscape:connector-curvature="0"
+         d="m 192.49071,295.34566 c 81.05294,-145.21826 222.66546,-127.5302 360.83766,-62.84251 138.1722,64.68769 209.20856,49.36981 236.16622,1.01359 C 821.28755,309.11551 704.7352,451.59234 483.39073,347.0387 262.04627,242.48506 192.8177,299.26927 192.49071,295.34566 z"
+         id="path3912"
+         style="fill:#013c64;fill-opacity:1;fill-rule:evenodd;stroke:#013c64;stroke-width:4.05435562px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#013c64;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       x="76"
+       y="1023.3622"
+       id="text3131"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3133"
+         x="76"
+         y="1023.3622"
+         style="font-size:180px;font-weight:bold;-inkscape-font-specification:Arial Bold;fill:#013c64;fill-opacity:1">chill</tspan></text>
+  </g>
+</svg>
