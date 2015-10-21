@@ -133,7 +133,7 @@ $description = {
      41 => { info => 'eev2 suction pressure circuit 2',        unit => 'bar', remark => '' },
      42 => { info => 'eev1 actual superheat 1',                unit => 'ºC',  remark => '3-11 normal' },
      43 => { info => 'eev2 actual superheat 2',                unit => 'ºC',  remark => '3-11 normal' },
-     54 => { info => 'water flow',                             unit => 'l/m', remark => '4.1-5 normal' },
+     54 => { info => 'water flow',                             unit => 'l/s', remark => '4.1-5 normal' },
      58 => { info => 'pump 1 invertor speed',                  unit => '%',   renark => '' },
      59 => { info => 'pump 2 invertor speed',                  unit => '%',   renark => '' },
      79 => { info => 'strategy version',                       unit => '',    remark => 'No specific units' },

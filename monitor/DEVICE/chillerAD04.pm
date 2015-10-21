@@ -29,7 +29,7 @@ $description = {
      12 => { info => 'eev2 suction pressure circuit 2 ',  unit => 'bar', remark => '' },
      13 => { info => 'Temperature set point ',            unit => 'ºC',  remark => '' },
      17 => { info => 'chiller outside ambient ',          unit => 'ºC',  remark => '' },
-    122 => { info => 'water flow ',                       unit => 'l/m', remark => '' }
+    122 => { info => 'water flow ',                       unit => 'l/s', remark => '' }
     },
   'integer' => { } 
   };

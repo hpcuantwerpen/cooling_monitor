@@ -284,9 +284,10 @@ foreach my $device (values  %devices) {
 	
 	my $filename = "$webdir/$device->{'label'}-details.html";
 	
-    if ( ( ! (-e $filename) ) || 
-         ( $mtime_template > (stat($filename)->mtime) ) || 
-         ( $mtime_code > (stat($filename)->mtime) ) ) { $rebuildDetails = 1; }
+    $rebuildDetails = $rebuildDetails 
+                      || ( ! (-e $filename) )
+                      || ( $mtime_template > (stat($filename)->mtime) )
+                      || ( $mtime_code > (stat($filename)->mtime) ); 
     		
 }
 
@@ -628,11 +629,11 @@ sub generate_detail_page(  ) {
     		$max = ( $#Dkeys > $#Akeys ) ? $#Dkeys : $#Akeys;
     		$max = ( $max > $#Ikeys )    ? $max    : $#Ikeys;
     		# + Loop over the rows of the table to generate.
-    		for ( my $c = 0; $c < $max; $c++ ) {
+    		for ( my $c = 0; $c <= $max; $c++ ) {
     			# ++ Start of output record
     			push @outputpage, $pre;
     			# ++ Digital variable (if there is one)
-    			if ( $c < $#Dkeys ) {
+    			if ( $c <= $#Dkeys ) {
     				$workline = $withdata;
     				$key = $Dkeys[$c];
     				$label = $device->{'description'}{'digital'}{$key}{'info'};
@@ -648,7 +649,7 @@ sub generate_detail_page(  ) {
 		            push @outputpage, $workline;  				
     			} else { push @outputpage, $nodata; }
      			# ++ Analog variable (if there is one)
-    			if ( $c < $#Akeys ) {
+    			if ( $c <= $#Akeys ) {
     				$workline = $withdata;
     				$key = $Akeys[$c];
     				$label = $device->{'description'}{'analog'}{$key}{'info'};
@@ -666,7 +667,7 @@ sub generate_detail_page(  ) {
 		            push @outputpage, $workline;  				
     			} else { push @outputpage, $nodata; }
      			# ++ Integer variable (if there is one)
-    			if ( $c < $#Ikeys ) {
+    			if ( $c <= $#Ikeys ) {
     				$workline = $withdata;
     				$key = $Ikeys[$c];
     				$label = $device->{'description'}{'integer'}{$key}{'info'};

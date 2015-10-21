@@ -32,15 +32,17 @@ table.DataTable              { border-spacing: 0 ; border-collapse: collapse; }
 .DataTable th.first          { text-align: left ; padding: 3px 2px 3px 5px ; }
 .DataTable td                { text-align: right ; padding: 1px 2px ; border : none ; }
 .DataTable td.top            { vertical-align: top ; }
-.DataTable td.data           { text-align: right ; padding: 1px 2px ; 
-                               border : solid black 1px ; }
-.DataTable td.labelNumber    { text-align: right ; padding: 1px 2px 1px 5px ; background-color: LightGrey ; 
-                               border : solid black 1px ; border-right: none ; }
-.DataTable td.labelName      { text-align: left ; padding: 1px 2px 1px 5px ; background-color: LightGrey ; 
-                               border : solid black 1px ; border-left: none ; }
+.DataTable td.data           { text-align: right ; vertical-align: top ; padding: 1px 2px ; 
+                               border: solid black 1px ; 
+                               min-width: 9em ; }
+.DataTable td.labelNumber    { text-align: right ; vertical-align: top ; padding: 1px 2px 1px 5px ; background-color: LightGrey ; 
+                               border: solid black 1px ; border-right: none ; 
+                               min-width: 1.75em; }
+.DataTable td.labelName      { text-align: left ; vertical-align: top ; padding: 1px 2px 1px 5px ; background-color: LightGrey ; 
+                               border: solid black 1px ; border-left: none ; }
 .DataTable td.dataRemark     { background-color : CornSilk ; }
 .DataTable td.title          { text-align: center ; font-size: 14pt ; font-weight: bold  ; padding: 4px 2ps ;
-                               border : solid black 1px ; }
+                               border: solid black 1px ; }
 .DataTable td.StatusField    { text-align: center ; 
                                border: solid black 1px ;  }
 .DataTable td.StatusMessages { text-align: left ; 
