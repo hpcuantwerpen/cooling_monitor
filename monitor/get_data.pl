@@ -131,22 +131,22 @@ if ( ! -d $webdir ) {
 #
 
 # Routine to fetch data from chiller01/chiller02
-$chiller01data = chillerAD04->New( "10.28.243.234", 6, "chiller01" );
-$chiller02data = chillerAD04->New( "10.28.243.234", 7, "chiller02" );
+$chiller01data = DEVICE::chillerAD04->New( "10.28.243.234", 6, "chiller01" );
+$chiller02data = DEVICE::chillerAD04->New( "10.28.243.234", 7, "chiller02" );
 
 # Routine to fetch data from Chiller04
-$chiller04data = chillerAD14->New( "10.28.233.52", "chiller04" );
+$chiller04data = DEVICE::chillerAD14->New( "10.28.233.52", "chiller04" );
 
 # Routine to fetch the data from the coolers of hopper and turing
-$cooler01data = coolerAD->New( "10.28.233.50", "cooler01" );
-$cooler02data = coolerAD->New( "10.28.233.51", "cooler02" );
+$cooler01data = DEVICE::coolerAD->New( "10.28.233.50", "cooler01" );
+$cooler02data = DEVICE::coolerAD->New( "10.28.233.51", "cooler02" );
 
 # Routine to fetch the data from the Air Handling Units in the compute room
-$ahu01data = ahuAD->New( "10.28.243.234", 1, "ahu01" );
-$ahu02data = ahuAD->New( "10.28.243.234", 2, "ahu02" );
-$ahu03data = ahuAD->New( "10.28.243.234", 3, "ahu03" );
-$ahu04data = ahuAD->New( "10.28.243.234", 4, "ahu04" );
-$ahu05data = ahuAD->New( "10.28.243.234", 5, "ahu05" );
+$ahu01data = DEVICE::ahuAD->New( "10.28.243.234", 1, "ahu01" );
+$ahu02data = DEVICE::ahuAD->New( "10.28.243.234", 2, "ahu02" );
+$ahu03data = DEVICE::ahuAD->New( "10.28.243.234", 3, "ahu03" );
+$ahu04data = DEVICE::ahuAD->New( "10.28.243.234", 4, "ahu04" );
+$ahu05data = DEVICE::ahuAD->New( "10.28.243.234", 5, "ahu05" );
 
 # Set the time stamp of the data capture,
 $timestampL = strftime( "%c",           localtime );  # Time stamp used for the web page in thelocal time zone.
@@ -283,11 +283,13 @@ $mtime_template    =  (stat("$codedir/TEMPLATES/details_template.html")->mtime);
 foreach my $device (values  %devices) {
 	
 	my $filename = "$webdir/$device->{'label'}-details.html";
+	my $objdef   = $device->ObjDef();
 	
     $rebuildDetails = $rebuildDetails 
                       || ( ! (-e $filename) )
                       || ( $mtime_template > (stat($filename)->mtime) )
-                      || ( $mtime_code > (stat($filename)->mtime) ); 
+                      || ( $mtime_code > (stat($filename)->mtime) )
+                      || ( (stat($objdef)->mtime) > (stat($filename)->mtime) ); 
     		
 }
 

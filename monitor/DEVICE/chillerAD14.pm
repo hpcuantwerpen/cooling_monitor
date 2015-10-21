@@ -1,4 +1,4 @@
-package chillerAD14;
+package DEVICE::chillerAD14;
 
 use IO::File;
 use Net::SNMP;
@@ -452,6 +452,13 @@ sub AlarmMssgs
 	return @alarmlist;
 }
 
+
+sub ObjDef
+{
+	
+	return __FILE__;
+	
+}
 
 #
 # End of the package definition.
