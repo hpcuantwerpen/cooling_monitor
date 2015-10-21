@@ -63,15 +63,15 @@ sub FullLog {
     	# Log file does not yet exist, build the line with labels.
     	push @labelline, "\"timestamp\"";
     	
-    	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'digital'} } ) { 
+    	foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'digital'} } ) { 
     		push @labelline, "\"$OIDdigital$mykey\"";
         }
 
-        foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'analog'} } ) { 
+        foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'analog'} } ) { 
     		push @labelline, "\"$OIDanalog$mykey\"";
         }    	
 
-        foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'integer'} } ) { 
+        foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'integer'} } ) { 
     		push @labelline, "\"$OIDinteger$mykey\"";
         }    	
 
@@ -79,13 +79,13 @@ sub FullLog {
 	
 	# Now prepare the data record.
 	my @dataline = ( $self->{'timestamp'} );
-	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'digital'} } ) { 
+	foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'digital'} } ) { 
         push @dataline, $self->{'digital'}{$mykey};
     }
-	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'analog'} } ) { 
+	foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'analog'} } ) { 
         push @dataline, $self->{'analog'}{$mykey};
     }
-	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'integer'} } ) { 
+	foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'integer'} } ) { 
         push @dataline, $self->{'integer'}{$mykey};
     }
 
@@ -161,6 +161,14 @@ sub AlarmMssgs
 	}
 	
 	return @alarmlist;
+}
+
+
+sub ObjDef
+{
+	
+	return __FILE__;
+	
 }
 
 #

@@ -1,5 +1,7 @@
 package DEVICE::chillerAD04;
 
+use parent 'DEVICE::generic';
+
 use IO::File;
 use Net::SNMP;
 use POSIX qw(strftime);
@@ -164,61 +166,6 @@ sub Log
 }
 
 
-#
-# Create a log of all available variables for future reference.
-# The file name is the label-YYMM.log in the directory indicated by the second argument.
-# If the file does not exist, we first write a line with the description of each column
-# derived from the SNMP OIDs.
-# Otherwise we just add a new record.
-#
-sub FullLog {
-	
-	my $self   = $_[0];
-	my $logdir = $_[1];
-	
-	my $filestamp = substr( $self->{'timestamp'}, 2, 4 );  # YYMM-part of the time stamp.
-	my $logfilename = "$logdir/$self->{'label'}-$filestamp.log";
-
-    my @labelline = ();
-    
-    if ( ! (-e $logfilename) ) {
-    	# Log file does not yet exist, build the line with labels.
-    	push @labelline, "\"timestamp\"";
-    	
-    	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'digital'} } ) { 
-    		push @labelline, "\"$OIDdigital$mykey\"";
-        }
-
-        foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'analog'} } ) { 
-    		push @labelline, "\"$OIDanalog$mykey\"";
-        }    	
-
-        foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'integer'} } ) { 
-    		push @labelline, "\"$OIDinteger$mykey\"";
-        }    	
-
-    }	
-	
-	# Now prepare the data record.
-	my @dataline = ( $self->{'timestamp'} );
-	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'digital'} } ) { 
-        push @dataline, $self->{'digital'}{$mykey};
-    }
-	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'analog'} } ) { 
-        push @dataline, $self->{'analog'}{$mykey};
-    }
-	foreach my $mykey ( sort {$a<=>$b} keys %{ $description->{'integer'} } ) { 
-        push @dataline, $self->{'integer'}{$mykey};
-    }
-
-    my $fh = IO::File->new( $logfilename, '>>' ) or die "Could not open file '$logfilename'";
-    if ( $#labelline > 0 ) { $fh->print( join($FS, @labelline), "\n" ); }
-    $fh->print( join($FS, @dataline), "\n" );
-    $fh->close;
-	
-}
-
-
 sub Status
 {
 	
@@ -232,73 +179,6 @@ sub Status
 	
 	return $status;
 	
-}
-
-
-sub DVar
-{
-	
-	my $self = $_[0];
-	my $var  = $_[1];
-	
-	my $value = $self->{'digital'}{$var};
-	
-	return ( $value, 
-	         $self->{'description'}{'digital'}{$var}{'value'}[$value], 
-	         $self->{'description'}{'digital'}{$var}{'remark'} );
-	
-}
-
-
-sub AVar
-{
-	
-	my $self = $_[0];
-	my $var  = $_[1];
-	
-	return ( $self->{'analog'}{$var}, 
-	         $self->{'description'}{'analog'}{$var}{'unit'}, 
-	         $self->{'description'}{'analog'}{$var}{'remark'} );
-	
-}
-
-
-sub IVar
-{
-	
-	my $self = $_[0];
-	my $var  = $_[1];
-	
-	return ( $self->{'integer'}{$var}, 
-	         $self->{'description'}{'integer'}{$var}{'unit'}, 
-	         $self->{'description'}{'integer'}{$var}{'remark'} );
-	
-}
-
-
-sub AlarmMssgs
-{
-	my $self = $_[0];
-	
-	my @alarmlist = ();
-	
-	foreach my $key (sort keys %{$self->{'digital'}} ) {
-		if ( $self->{'description'}{'digital'}{$key}{'type'} eq "SoftAlarm" ) {
-			if ( $self->{'digital'}{$key} != 0 ) {
-				push @alarmlist, ( { source => $self->{'label'}, 
-					                 message => $self->{'description'}{'digital'}{$key}{'info'}, 
-					                 level => 'Non-Critical' } );
-			}
-		} elsif ( $self->{'description'}{'digital'}{$key}{'type'} eq "CriticalAlarm" ) {
-			if ( $self->{'digital'}{$key} != 0 ) {
-				push @alarmlist, ( { source => $self->{'label'}, 
-					                 message => $self->{'description'}{'digital'}{$key}{'info'}, 
-					                 level => 'Critical' } );
-			}			
-		}
-	}
-	
-	return @alarmlist;
 }
 
 
