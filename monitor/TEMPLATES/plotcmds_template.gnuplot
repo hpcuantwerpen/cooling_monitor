@@ -46,8 +46,6 @@ set xdata time
 set timefmt "%Y%m%dT%H%MZ"
 
 # Common to all plots
-set format x "%m/%d"        # Label format for x-axis
-set xlabel "Date"
 set key left top            # Set the graph legend position
 set grid
 
@@ -84,6 +82,8 @@ do for [ns in CHILLERS] {
   n = ns+0   # A trick to force conversion to a number.
   set title  title( n )
   set output svgfile( n, "all" )
+  set format x "%m/%d"        # Label format for x-axis
+  set xlabel "Date"
   plot \
     datafile(n) using 1:2 with lines lw 1 lt 3 title 'Ambient Temperature', \
     datafile(n) using 1:3 with lines lw 1 lt 1 title 'Return Water Temperature', \
@@ -97,6 +97,8 @@ do for [ns in CHILLERS] {
   set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "7d" )
   replot;
+  set format x "%h"        # Label format for x-axis
+  set xlabel "Time"
   set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "24u" )
   replot;
@@ -129,6 +131,8 @@ do for [ns in CHILLERS] {
   n = ns+0   # A trick to force conversion to a number.
   set title  title( n )
   set output svgfile( n, "all" )
+  set format x "%m/%d"        # Label format for x-axis
+  set xlabel "Date"
   plot \
     datafile(n) using 1:7  with lines lw 1 lt  11 axes x1y1 title "* Circuit 1 liquid pressure (bar)", \
     datafile(n) using 1:9  with lines lw 1 lt  12 axes x1y1 title "* Circuit 1 suction pressure (bar)", \
@@ -144,6 +148,8 @@ do for [ns in CHILLERS] {
   set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "7d" )
   replot;
+  set format x "%h"        # Label format for x-axis
+  set xlabel "Time"
   set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "24u" )
   replot;
@@ -177,6 +183,8 @@ do for [ns in CHILLERS] {
   n = ns+0   # A trick to force conversion to a number.
   set title  title( n )
   set output svgfile( n, "all" )
+  set format x "%m/%d"        # Label format for x-axis
+  set xlabel "Date"
   plot \
     datafile(n) using 1:($7-$9)   with lines lw 1 lt  11 axes x1y1 title "* Circuit 1 pressure raise", \
     datafile(n) using 1:($8-$10)  with lines lw 1 lt 121 axes x1y1 title "* Circuit 2 pressure raise", \
@@ -190,6 +198,8 @@ do for [ns in CHILLERS] {
   set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "7d" )
   replot;
+  set format x "%h"        # Label format for x-axis
+  set xlabel "Time"
   set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "24u" )
   replot;
@@ -220,6 +230,8 @@ do for [ns in CHILLERS] {
   n = ns+0   # A trick to force conversion to a number.
   set title  title( n )
   set output svgfile( n, "all" )
+  set format x "%m/%d"        # Label format for x-axis
+  set xlabel "Date"
   plot \
     datafile(n) using 1:11 with lines lw 1 lt  11 title "* Circuit 1 suction temperature", \
     datafile(n) using 1:12 with lines lw 1 lt  21 title "* Circuit 2 suction temperature", \
@@ -233,6 +245,8 @@ do for [ns in CHILLERS] {
   set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "7d" )
   replot;
+  set format x "%h"        # Label format for x-axis
+  set xlabel "Time"
   set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "24u" )
   replot;
@@ -261,6 +275,8 @@ do for [ns in CHILLERS] {
   n = ns+0   # A trick to force conversion to a number.
   set title  title( n )
   set output svgfile( n, "all" )
+  set format x "%m/%d"        # Label format for x-axis
+  set xlabel "Date"
   plot \
     datafile(n) using 1:13 with lines lw 1 lt 11 title "* Circuit 1 superheat", \
     datafile(n) using 1:14 with lines lw 1 lt 21 title "* Circuit 2 superheat"
@@ -273,6 +289,8 @@ do for [ns in CHILLERS] {
   set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "7d" )
   replot;
+  set format x "%h"        # Label format for x-axis
+  set xlabel "Time"
   set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "24u" )
   replot;
@@ -294,6 +312,8 @@ set title "Supply temperature
 set key left bottom            # Set the graph legend position
 
 set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
 plot \
   datafile(1) using 1:4 with lines lw 1 lt   2 title "Chiller01", \
   datafile(2) using 1:4 with lines lw 1 lt 101 title "Chiller02", \
@@ -307,6 +327,8 @@ replot;
 set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "7d" )
 replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
 set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "24u" )
 replot;
@@ -343,6 +365,8 @@ do for [ns in COOLERS] {
   n = ns+0   # A trick to force conversion to a number.
   set title  title( n )
   set output svgfile( n, "all" )
+  set format x "%m/%d"        # Label format for x-axis
+  set xlabel "Date"
   plot \
     datafile(n) using 1:2 with lines lw 1 lt 1 axes x1y1 title 'Return Air Temperature (°C)', \
     datafile(n) using 1:4 with lines lw 1 lt 3 axes x1y1 title 'Supply Air Temperature (°C)', \
@@ -357,6 +381,8 @@ do for [ns in COOLERS] {
   set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "7d" )
   replot;
+  set format x "%h"        # Label format for x-axis
+  set xlabel "Time"
   set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
   set output svgfile( n, "24u" )
   replot;
@@ -388,6 +414,8 @@ set title "AHU Return temperature"
 svgfile( range ) = sprintf( "%s/ahu-return-temp-%s.svg", webdir, range )
 
 set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
 plot \
   datafile(3) using 1:2 with lines lw 1 lt 3 title 'AHU 3', \
   datafile(4) using 1:2 with lines lw 1 lt 4 title 'AHU 4', \
@@ -401,6 +429,8 @@ replot;
 set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "7d" )
 replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
 set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "24u" )
 replot;
@@ -418,6 +448,8 @@ set title "AHU Return humidity"
 svgfile( range ) = sprintf( "%s/ahu-return-hum-%s.svg", webdir, range )
 
 set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
 plot \
   datafile(3) using 1:3 with lines lw 1 lt 3 title 'AHU 3', \
   datafile(4) using 1:3 with lines lw 1 lt 4 title 'AHU 4', \
@@ -431,6 +463,8 @@ replot;
 set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "7d" )
 replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
 set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "24u" )
 replot;
@@ -448,6 +482,8 @@ set title "AHU Supply temperature"
 svgfile( range ) = sprintf( "%s/ahu-supply-temp-%s.svg", webdir, range )
 
 set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
 plot \
   datafile(3) using 1:4 with lines lw 1 lt 3 title 'AHU 3', \
   datafile(4) using 1:4 with lines lw 1 lt 4 title 'AHU 4', \
@@ -461,6 +497,8 @@ replot;
 set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "7d" )
 replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
 set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "24u" )
 replot;
