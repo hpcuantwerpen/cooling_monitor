@@ -83,7 +83,7 @@ The first line is contains the column names. The first column is always the
 time stamp, labeled "timestamp", and this column is followed by the data gathered
 from the device, and named with the variable-specific part of the OID, X.Y
 where for all AirDale devices X = 1 denotes the digital variables, X = 2 the
-analog ones and X = 3 the binary ones, and Y is the number of the variable of
+analog ones and X = 3 the integer ones, and Y is the number of the variable of
 that type. The meaning of each of these variables can be read from the web page
 that shows the device details or from the code for the specific device type.
 
