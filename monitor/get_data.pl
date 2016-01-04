@@ -6,59 +6,8 @@
 # Uses the following non-core modules:
 # + Net::SNMP 
 #
-# NOTE:
-# - Chiller data format: Fields are tab-separted, with the following fields:
-#   01 timestamp: "%y%m%d-%H%M"
-#   02 ambient temperature            AD14: analog  var 19   AD04: analog var  17
-#   03 Return water temperature       AD14: analog  var 20   AD04: analog var  4
-#   04 Supply water temperature       AD14: analog  var 21   AD04: analog var  5
-#   05 set point                      AD14: analog  var 23   AD04: analog var  13
-#   06 evaporator inlet temperature   AD14: analog  var 30   AD04: /
-#   07 circuit 1 liquid pressure      AD14: analog  var 24   AD04: analog var  1
-#   08 circuit 2 liquid pressure      AD14: analog  var 25   AD04: analog var  2
-#   09 eev1 suction press. circ. 1    AD14: analog  var 40   AD04: analog var  11
-#   10 eev2 suction press. circ. 2    AD14: analog  var 41   AD04: analog var  12
-#   11 eev1 suction temp. circ. 1     AD14: analog  var 38   AD04: /
-#   12 eev2 suction temp. circ. 2     AD14: analog  var 39   AD04: /
-#   13 eev1 actual superheat          AD14: analog  var 42   AD04: /
-#   14 eev2 actual superheat          AD14: analog  var 43   AD04: /
-#   15 head pressure control          AD14: analog  var 36   AD04: /
-#   16 water flow                     AD14: analog  var 54   AD04: analog var  122
-#   17 free cooling valve position    AD14: analog  var 34   AD04: /
-#   18 compressor 1 on/off            AD14: digital var 35   AD04: digital var 15
-#   19 compressor 2 on/off            AD14: digital var 37   AD04: digital var 16
-#   20 compressor 3 on/off            AD14: digital var 39   AD04: digital var 17
-#   21 compressor 4 on/off            AD14: digital var 41   AD04: digital var 18
-#   22 pump 1 on/off                  AD14: digital var 29   AD04: digital var 21
-#   23 pump 2 on/off                  AD14: digital var 31   AD04: digital var 22
-#   24 non-critical alarm             AD14: digital var 102  AD04: 0
-#   25 critical alarm                 AD14: digital var 103  AD04: 23 && 24 && 54 
-#
-# - Cooler data format: Fields are tab-separated, with the following fields:
-#   01 timestamp: "%y%m%d-%H%M"
-#   02 return air temparature        analog var 35
-#   03 return air humidity           analog var 34
-#   04 supply air temperature        analog var 36
-#   05 set point                     analog var 48
-#   06 aisle differential pressure   analog var 39
-#   07 inlet water temperature       analog var 33
-#   08 evaporator fan speed          analog var 2
-#   09 CW valve position             analog var 44
-#   10 fan trip                      digital var 31
-#   11 high return temperature       digital var 57
-#   12 low return temperature        digital var 58
-#   13 high supply temperature       digital var 59
-#   14 low supply temperature        digital var 60
-#
-# - AHU data format: Fields are tab-separated, with the following fields:
-#   01 timestamp: "%y%m%d-%H%M"
-#   02 air return temperature        analog var 4
-#   03 air return humidity           analog var 1   
-#   04 air supply temperature        analog var 5
-#   05 set point                     /
-#   06 fan operating                 digital var 21
-#   07 non-critical alarm            digital var 26
-#   08 critical alarm                digital var 27
+# NOTE: See the design.txt file for more information on file formats and the
+# design of the code.
 #
 
 
