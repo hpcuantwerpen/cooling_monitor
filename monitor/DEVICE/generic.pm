@@ -149,13 +149,17 @@ sub AlarmMssgs
 			if ( $self->{'digital'}{$key} != 0 ) {
 				push @alarmlist, ( { source => $self->{'label'}, 
 					                 message => $self->{'description'}{'digital'}{$key}{'info'}, 
-					                 level => 'Non-Critical' } );
+					                 level => 'Non-Critical',
+					                 ID => join(  '.', $self->{'label'}, 1, $key ),
+					                 timestamp => $self->{'timestamp'} } );
 			}
 		} elsif ( $self->{'description'}{'digital'}{$key}{'type'} eq "CriticalAlarm" ) {
 			if ( $self->{'digital'}{$key} != 0 ) {
 				push @alarmlist, ( { source => $self->{'label'}, 
 					                 message => $self->{'description'}{'digital'}{$key}{'info'}, 
-					                 level => 'Critical' } );
+					                 level => 'Critical',
+					                 ID => join(  '.', $self->{'label'}, 1, $key ),
+					                 timestamp => $self->{'timestamp'} } );
 			}			
 		}
 	}
