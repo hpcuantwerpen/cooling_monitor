@@ -20,7 +20,6 @@ use File::Copy;
 use File::stat;
 use Cwd 'realpath';
 use POSIX qw(strftime);
-use POSIX::strptime qw(strptime);
 use Time::Local;  # For the timelocal function.
 use Storable;
 
@@ -35,7 +34,9 @@ use DEVICE::ahuAD;
 my $datadir   = "../data";
 my $webdir    = "../www" ;
 my $codedir   = dirname( realpath( $0 ) );
-my $dataValid = 300;                        # Time the data should remain valid as indicated in the data file.   
+my $dataValid = 310;                        # Time the data should remain valid as indicated in the data file.   
+my $mailto    = 'kurt.lust@uantwerpen.be';  # Production use: cooler@calcua.uantwerpen.be
+my $mailx     = '/bin/mailx';
 
 #
 # Overwrite the defaults with values specified on the command line (if any)
@@ -134,20 +135,24 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 #
 my $debug = 0;
 if ( $debug == 1 ) {
+#    $chiller01data->{'digital'}{24}  = 1;
     $chiller02data->{'digital'}{24}  = 1;
-    $chiller04data->{'digital'}{102} = 1;
-    $chiller04data->{'digital'}{120} = 1;
-    $cooler02data->{'digital'}{59}   = 1;
-    $ahu03data->{'digital'}{26}      = 1;
+    $chiller04data->{'digital'}{102} = 1; # Non-critical alarm
+    $chiller04data->{'digital'}{120} = 1; # Non-critical alarm
+    $cooler01data->{'digital'}{59}   = 1;
+#    $cooler02data->{'digital'}{59}   = 1;
+    $ahu03data->{'digital'}{26}      = 1; # Non-critical alarm
 }
 
 
 #
-# Get the alarms
+# Get the alarms and send out mails if there are new or expired critical alarms.
 #
 
 (my $alarmMssgsRef, my $alarmListRef) = get_alarms( \%devices, $datadir );
 #print "\n\nReturn of get_alarms: the list of new, active and expired alarms:\n"; print Dumper $alarmListRef;
+
+send_mail( $alarmListRef, $mailto );
 
 
 #
@@ -338,11 +343,24 @@ sub print_help {
 #
 #
 
+#sub convert_timestamp {
+#    
+#    use POSIX::strptime qw(strptime);
+#
+#    return strftime( "%c", localtime( timegm( strptime( $_[0],"%Y%m%dT%H%MZ" ) ) ) );
+#    
+#}
+
+# Current Hopper master node does not have the POSIX::strptime package, so to
+# avoid messing with the Perl install on the master nodes:
+
 sub convert_timestamp {
     
-    return strftime( "%c", localtime( timegm( strptime( $_[0],"%Y%m%dT%H%MZ" ) ) ) );
+    $_[0] =~ /(\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)Z/;
+    return strftime( "%c", localtime( timegm( ( 0, $5+0, $4+0, $3+0, $2 - 1, $1 + 100 ) ) ) );
     
 }
+
 
 
 ################################################################################
@@ -446,6 +464,100 @@ sub get_alarms {
     return ( \@alarmMssgs, \%alarmList );
     
 }  # End of get_alarms
+
+
+################################################################################
+################################################################################
+#
+# Generate mail messages if there are any new or expired critical alarms.
+#
+#
+
+sub send_mail {
+	
+	my $alarmListRef = shift;
+	
+	my $subject;
+	my @message = ( );
+	
+	if ( @{$alarmListRef->{critical_new}} ) {
+		
+        $subject = 'COOLING: New critical alarms!';	
+        
+        # Add new alarms to the mail.
+		push @message, 'The following new critical alarms have been raised (at about ' . 
+		               convert_timestamp( $alarmListRef->{critical_new}[0]{timestamp} ) . '):';
+		foreach my $alarm (@{$alarmListRef->{critical_new}}) {
+			push @message, '* '. $alarm->{source} . ': '. $alarm->{message};
+		}
+		
+		# Add active alarms to the mail (if any).
+		push @message, '';
+		if ( @{$alarmListRef->{critical_active}} ) {
+			push @message, 'The following critical alarms are still active:';
+			foreach my $alarm (@{$alarmListRef->{critical_active}}) {
+                push @message, '* '. $alarm->{source} . ': '. $alarm->{message} .
+                               ' (since ' . convert_timestamp( $alarm->{timestamp} ) . ')';
+			}		
+		} else { push @message, 'There are no other active critical alarms.' }
+		
+		# Add expired alarms to the mail (if any).
+        push @message, '';
+        if ( @{$alarmListRef->{critical_expired}} ) {
+            push @message, 'The following critical alarms have been reset:';
+            foreach my $alarm (@{$alarmListRef->{critical_expired}}) {
+                push @message, '* '. $alarm->{source} . ': '. $alarm->{message} .
+                               ' (raised on ' . convert_timestamp( $alarm->{timestamp} ) . ')';
+            }       
+        } else { push @message, 'No alarms have been reset recently.' }
+        
+        # echo "$str" | mailx cooler@calcua.uantwerpen.be -s "U541 ALARM: chiller 1"
+		
+	} elsif ( @{$alarmListRef->{critical_expired}} ) {
+
+        if ( @{$alarmListRef->{critical_active}} ) {
+        	$subject = 'COOLING: Some critical alarms cleared, other remain active';
+        } else {
+        	$subject = 'COOLING: Alarms cleared';
+        }
+		
+		# Add the messages that have been reset.
+		push @message, 'The following critical alarms have been reset:';
+        foreach my $alarm (@{$alarmListRef->{critical_expired}}) {
+            push @message, '* '. $alarm->{source} . ': '. $alarm->{message} .
+                           ' (raised on ' . convert_timestamp( $alarm->{timestamp} ) . ')';
+        }       
+		
+		# We now there are no new ones as that case has been treated before. 
+		# There may however be more active alarms.
+		# Add active alarms to the mail (if any).
+        push @message, '';
+        if ( @{$alarmListRef->{critical_active}} ) {
+            push @message, 'The following critical alarms reamin active however:';
+            foreach my $alarm (@{$alarmListRef->{critical_active}}) {
+                push @message, '* '. $alarm->{source} . ': '. $alarm->{message} .
+                               ' (since ' . convert_timestamp( $alarm->{timestamp} ) . ')';
+            }       
+        } else { push @message, 'There are no remaining active critical alarms.' }
+		
+	}
+	
+	# Do we have anything to send? If so, send message.
+	# echo "$str" | mailx -s "U541 ALARM: chiller 1" cooler@calcua.uantwerpen.be 
+	# Test mailx with: echo 'Test!' | mailx -s "Testmail" k.w.a.lust@gmail.com
+	
+	if ( @message ) {
+        my $mailcommand = join( ' ', ( '|', $mailx, '-s', "'$subject'", $mailto ) );	
+        #print "Sending message \":\n". join( "\n", @message ) . "\n\" using the command \"" . $mailcommand . "\"\n";  
+        my $pipe = IO::File->new( $mailcommand ) or die "Could not open create a pipe for sending mail";
+        $pipe->print( join( "\n", @message ) );
+        $pipe->close;
+        #open( my $pipe, $mailcommand );
+        #print $pipe join( "\n", @message );
+        #close( $pipe );
+	}
+	
+}
 
 
 ################################################################################
