@@ -145,27 +145,19 @@ sub AlarmMssgs
 	my @alarmlist = ();
 	
 	foreach my $key (sort keys %{$self->{'digital'}} ) {
-		if ( $self->{'description'}{'digital'}{$key}{'type'} eq "SoftAlarm" ) {
+		if ( $self->{'description'}{'digital'}{$key}{'type'} ne "NoAlarm" ) { # We have an alarm, could be SoftAlarm or CriticalAlarm but that doesn't matter.
 			if ( $self->{'digital'}{$key} != 0 ) {
 				push @alarmlist, ( { source => $self->{'label'}, 
 					                 message => $self->{'description'}{'digital'}{$key}{'info'}, 
-					                 level => 'Non-Critical',
+					                 level => $self->{'description'}{'digital'}{$key}{'type'},
 					                 ID => join(  '.', $self->{'label'}, 1, $key ),
 					                 timestamp => $self->{'timestamp'} } );
-			}
-		} elsif ( $self->{'description'}{'digital'}{$key}{'type'} eq "CriticalAlarm" ) {
-			if ( $self->{'digital'}{$key} != 0 ) {
-				push @alarmlist, ( { source => $self->{'label'}, 
-					                 message => $self->{'description'}{'digital'}{$key}{'info'}, 
-					                 level => 'Critical',
-					                 ID => join(  '.', $self->{'label'}, 1, $key ),
-					                 timestamp => $self->{'timestamp'} } );
-			}			
-		}
-	}
+			} # end if
+		} # end if
+	} # end foreach
 	
 	return @alarmlist;
-}
+} # end sub
 
 
 sub ObjDef

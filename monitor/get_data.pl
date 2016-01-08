@@ -133,7 +133,7 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 #
 # Introduce some problems for debug purposes.
 #
-my $debug = 0;
+my $debug = 1;
 if ( $debug == 1 ) {
 #    $chiller01data->{'digital'}{24}  = 1;
     $chiller02data->{'digital'}{24}  = 1;
@@ -420,13 +420,13 @@ sub get_alarms {
     foreach my $alarm (@{$old_alarmDB_ref}) { 
         my @alarmOccurs = grep { $_->{ID} eq $alarm->{ID} } @alarmMssgs;
         if ( @alarmOccurs ) { # The alarm is still active.
-            if ( $alarm->{level} eq 'Critical' ) {
+            if ( $alarm->{level} eq 'CriticalAlarm' ) {
                 push @{$alarmList{critical_active}}, $alarm;
             } else {
                 push @{$alarmList{soft_active}}, $alarm;
             }
         } else { # Couldn't find the alarm in the new list, so the alarm has expired.
-            if ( $alarm->{level} eq 'Critical' ) {
+            if ( $alarm->{level} eq 'CriticalAlarm' ) {
                 push @{$alarmList{critical_expired}}, $alarm;
             } else {
                 push @{$alarmList{soft_expired}}, $alarm;
@@ -440,7 +440,7 @@ sub get_alarms {
     foreach my $alarm (@alarmMssgs) {
         my @alarmOccurs = grep { $_->{ID} eq $alarm->{ID} } @{$old_alarmDB_ref};
         unless ( @alarmOccurs ) { 
-            if ( $alarm->{level} eq 'Critical' ) {
+            if ( $alarm->{level} eq 'CriticalAlarm' ) {
                 push @{$alarmList{critical_new}}, $alarm;
             } else {
                 push @{$alarmList{soft_new}}, $alarm;
@@ -584,6 +584,7 @@ sub generate_rawdata {
     } 
        
     # Sort the message first according to how critical they are, then according to the device order.
+    # We use the fact that 'CriticalAlarm' lt 'SoftAlarm'
     @alarmMssgs = sort { (($res = ($a->{level} cmp $b->{level})) == 0) ? ($deviceOrder{$a->{source}} <=> $deviceOrder{$b->{source}}) : $res } @{$alarmMssgsRef};
     
     #
@@ -599,9 +600,7 @@ sub generate_rawdata {
     # Add the alarm strings.
     push @outputpage, "<div id=\"RD_alarms\">\n";
     for my $c1 (0 .. $#alarmMssgs) {
-        $spanclass = $alarmMssgs[$c1]{'level'};
-        $spanclass =~ s/\-//;
-        push @outputpage, "  <span class=ConsoleMssg${spanclass}>$alarmMssgs[$c1]{source}: $alarmMssgs[$c1]{message} (since " .
+        push @outputpage, "  <span class=ConsoleMssg$alarmMssgs[$c1]{'level'}>$alarmMssgs[$c1]{source}: $alarmMssgs[$c1]{message} (since " .
                           convert_timestamp( $alarmMssgs[$c1]{timestamp} ) . ")</span>" . 
                           ( ($c1 < $#alarmMssgs) ? "<br/>\n" : "\n") ;
     }
