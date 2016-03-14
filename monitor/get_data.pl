@@ -23,8 +23,8 @@ use POSIX qw(strftime);
 use Time::Local;  # For the timelocal function.
 use Storable;
 
-use DEVICE::chillerAD04;
-use DEVICE::chillerAD14;
+# use DEVICE::chillerAD04;
+# use DEVICE::chillerAD14;
 use DEVICE::coolerAD;
 use DEVICE::ahuAD;
 
@@ -36,6 +36,7 @@ my $webdir    = "../www" ;
 my $codedir   = dirname( realpath( $0 ) );
 my $dataValid = 310;                        # Time the data should remain valid as indicated in the data file.   
 my $mailto    = 'kurt.lust@uantwerpen.be';  # Production use: cooler@calcua.uantwerpen.be
+#my $mailto     = 'cooler@calcua.uantwerpen.be';
 my $mailx     = '/bin/mailx';
 
 #
@@ -84,19 +85,19 @@ if ( ! -d $webdir ) {
 #
 
 # Routine to fetch data from chiller01/chiller02
-$chiller01data = DEVICE::chillerAD04->New( "10.28.243.234", 6, "chiller01" );
-$chiller02data = DEVICE::chillerAD04->New( "10.28.243.234", 7, "chiller02" );
+# $chiller01data = DEVICE::chillerAD04->New( "10.28.243.234", 6, "chiller01" );
+# $chiller02data = DEVICE::chillerAD04->New( "10.28.243.234", 7, "chiller02" );
 
 # Routine to fetch data from Chiller04
-$chiller04data = DEVICE::chillerAD14->New( "10.28.233.52", "chiller04" );
+# $chiller04data = DEVICE::chillerAD14->New( "10.28.233.52", "chiller04" );
 
 # Routine to fetch the data from the coolers of hopper and turing
 $cooler01data = DEVICE::coolerAD->New( "10.28.233.50", "cooler01" );
 $cooler02data = DEVICE::coolerAD->New( "10.28.233.51", "cooler02" );
 
 # Routine to fetch the data from the Air Handling Units in the compute room
-$ahu01data = DEVICE::ahuAD->New( "10.28.243.234", 1, "ahu01" );
-$ahu02data = DEVICE::ahuAD->New( "10.28.243.234", 2, "ahu02" );
+# $ahu01data = DEVICE::ahuAD->New( "10.28.243.234", 1, "ahu01" );
+# $ahu02data = DEVICE::ahuAD->New( "10.28.243.234", 2, "ahu02" );
 $ahu03data = DEVICE::ahuAD->New( "10.28.243.234", 3, "ahu03" );
 $ahu04data = DEVICE::ahuAD->New( "10.28.243.234", 4, "ahu04" );
 $ahu05data = DEVICE::ahuAD->New( "10.28.243.234", 5, "ahu05" );
@@ -109,9 +110,9 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 # Generate the device list hash
 #
 %devices = (
-   1 => $chiller01data,
-   2 => $chiller02data,
-   4 => $chiller04data,
+#   1 => $chiller01data,
+#   2 => $chiller02data,
+#   4 => $chiller04data,
   11 => $cooler01data,
   12 => $cooler02data,
   23 => $ahu03data,
@@ -120,9 +121,9 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 );
 
 %links = (
-   1 => "graphs.html#chiller01",
-   2 => "graphs.html#chiller02",
-   4 => "graphs.html#chiller04",
+#   1 => "graphs.html#chiller01",
+#   2 => "graphs.html#chiller02",
+#   4 => "graphs.html#chiller04",
   11 => "graphs.html#cooler01",
   12 => "graphs.html#cooler02",
   23 => "graphs.html#AHU",
@@ -133,12 +134,12 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 #
 # Introduce some problems for debug purposes.
 #
-my $debug = 1;
+my $debug = 0;
 if ( $debug == 1 ) {
 #    $chiller01data->{'digital'}{24}  = 1;
-    $chiller02data->{'digital'}{24}  = 1;
-    $chiller04data->{'digital'}{102} = 1; # Non-critical alarm
-    $chiller04data->{'digital'}{120} = 1; # Non-critical alarm
+#    $chiller02data->{'digital'}{24}  = 1;
+#    $chiller04data->{'digital'}{102} = 1; # Non-critical alarm
+#    $chiller04data->{'digital'}{120} = 1; # Non-critical alarm
     $cooler01data->{'digital'}{59}   = 1;
 #    $cooler02data->{'digital'}{59}   = 1;
     $ahu03data->{'digital'}{26}      = 1; # Non-critical alarm
@@ -165,13 +166,13 @@ generate_rawdata( \%devices, $webdir, $alarmMssgsRef );
 #
 # Create the log files for the graphs.
 #
-$chiller01data->Log( "$datadir/chiller01.data" );
-$chiller02data->Log( "$datadir/chiller02.data" );
-$chiller04data->Log( "$datadir/chiller04.data" );
+#$chiller01data->Log( "$datadir/chiller01.data" );
+#$chiller02data->Log( "$datadir/chiller02.data" );
+#$chiller04data->Log( "$datadir/chiller04.data" );
 $cooler01data->Log( "$datadir/cooler01.data" );
 $cooler02data->Log( "$datadir/cooler02.data" );
-$ahu01data->Log( "$datadir/ahu01.data" );
-$ahu02data->Log( "$datadir/ahu02.data" );
+#$ahu01data->Log( "$datadir/ahu01.data" );
+#$ahu02data->Log( "$datadir/ahu02.data" );
 $ahu03data->Log( "$datadir/ahu03.data" );
 $ahu04data->Log( "$datadir/ahu04.data" );
 $ahu05data->Log( "$datadir/ahu05.data" );
@@ -202,13 +203,13 @@ close( $gnuplotPipe );
 # Create full log files in case we ever need more data.
 # These files are created per month.
 #
-$chiller01data->FullLog( $datadir );
-$chiller02data->FullLog( $datadir );
-$chiller04data->FullLog( $datadir );
+# $chiller01data->FullLog( $datadir );
+# $chiller02data->FullLog( $datadir );
+# $chiller04data->FullLog( $datadir );
 $cooler01data->FullLog( $datadir );
 $cooler02data->FullLog( $datadir );
-#$ahu01data->FullLog( $datadir );
-#$ahu02data->FullLog( $datadir );
+# $ahu01data->FullLog( $datadir );
+# $ahu02data->FullLog( $datadir );
 $ahu03data->FullLog( $datadir );
 $ahu04data->FullLog( $datadir );
 $ahu05data->FullLog( $datadir );

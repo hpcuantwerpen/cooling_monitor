@@ -130,9 +130,6 @@ function refreshFields( ) {
 <table class="DataTable">
   <tr>
     <th class="first">Timestamp</th>
-    <th>chiller 1</th>
-    <th>chiller 2</th>
-    <th>chiller 4</th>
     <th></th>
     <th>cooler 1</th>
     <th>cooler 2</th>
@@ -143,9 +140,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label top">%timestamp%</td>
-    <td class="StatusField top">%status(1)%</td>
-    <td class="StatusField top">%status(2)%</td>
-    <td class="StatusField top">%status(4)%</td>
     <td class="label"></td>
     <td class="StatusField top">%status(11)%</td>
     <td class="StatusField top">%status(12)%</td>
@@ -163,9 +157,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Supply water T</td>
-    <td class="data">%avar(1,5)%</td>
-    <td class="data">%avar(2,5)%</td>
-    <td class="data">%avar(4,21)%</td>
     <td class="label"></td>
     <td class="data">%avar(11,33)%</td>
     <td class="data">%avar(12,33)%</td>
@@ -176,9 +167,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Return water T</td>
-    <td class="data">%avar(1,4)%</td>
-    <td class="data">%avar(2,4)%</td>
-    <td class="data">%avar(4,20)%</td>
     <td class="label"></td>
     <td class="data">/</td>
     <td class="data">/</td>
@@ -189,9 +177,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Flow rate</td>
-    <td class="data">%avar(1,122)%</td>
-    <td class="data">%avar(2,122)%</td>
-    <td class="data">%avar(4,54)%</td>
     <td class="label"></td>
     <td class="data">/</td>
     <td class="data">/</td>
@@ -202,9 +187,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Supply air T</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
     <td class="label"></td>
     <td class="data">%avar(11,36)%</td>
     <td class="data">%avar(12,36)%</td>
@@ -215,9 +197,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Relative humidity</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
     <td class="label"></td>
     <td class="data">%avar(11,34)%</td>
     <td class="data">%avar(12,34)%</td>
@@ -228,9 +207,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Return air T</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
     <td class="label"></td>
     <td class="data">%avar(11,35)%</td>
     <td class="data">%avar(12,35)%</td>
@@ -241,9 +217,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Set point</td>
-    <td class="data">%avar(1,13)%</td>
-    <td class="data">%avar(2,13)%</td>
-    <td class="data">%avar(4,23)%</td>
     <td class="label"></td>
     <td class="data">%avar(11,48)%</td>
     <td class="data">%avar(12,48)%</td>
@@ -254,10 +227,7 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Outside temperature</td>
-    <td class="data">%avar(1,17)%</td>
-    <td class="data">%avar(2,17)%</td>
-    <td class="data">%avar(4,19)%</td>
-    <td class="label"></td>
+   <td class="label"></td>
     <td class="data">/</td>
     <td class="data">/</td>
     <td class="label"></td>
@@ -270,9 +240,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 1 liquid pressure</td>
-    <td class="data">%avar(1,1)%</td>
-    <td class="data">%avar(2,1)%</td>
-    <td class="data">%avar(4,24)%</td>
     <td class="label">Aisle Differential Pressure</td>
     <td class="data">%avar(11,39)%</td>
     <td class="data">%avar(12,39)%</td>
@@ -283,10 +250,7 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 1 suction pressure</td>
-    <td class="data">%avar(1,11)%</td>
-    <td class="data">%avar(2,11)%</td>
-    <td class="data">%avar(4,40)%</td>
-    <td class="label">Evaporator Fan Speed</td>
+     <td class="label">Evaporator Fan Speed</td>
     <td class="data">%avar(11,2)%</td>
     <td class="data">%avar(12,2)%</td>
     <td class="label">Fan Operating</td>
@@ -296,9 +260,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 1 suction temperature</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%avar(4,38)%</td>
     <td class="label">CW Valve Position</td>
     <td class="data">%avar(11,44)%</td>
     <td class="data">%avar(12,44)%</td>
@@ -309,9 +270,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 1 superheat</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%avar(4,42)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -322,9 +280,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 1 EEV valve position</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%ivar(4,42)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -335,9 +290,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Compressor 1 on/off</td>
-    <td class="data">%dvar(1,15)%</td>
-    <td class="data">%dvar(2,15)%</td>
-    <td class="data">%dvar(4,35)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -348,9 +300,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Compressor 2 on/off</td>
-    <td class="data">%dvar(1,16)%</td>
-    <td class="data">%dvar(2,16)%</td>
-    <td class="data">%dvar(4,37)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -361,9 +310,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 2 liquid pressure</td>
-    <td class="data">%avar(1,2)%</td>
-    <td class="data">%avar(2,2)%</td>
-    <td class="data">%avar(4,25)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -374,9 +320,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 2 suction pressure</td>
-    <td class="data">%avar(1,12)%</td>
-    <td class="data">%avar(2,12)%</td>
-    <td class="data">%avar(4,41)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -387,9 +330,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 2 suction temperature</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%avar(4,39)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -400,9 +340,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 2 superheat</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%avar(4,43)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -413,9 +350,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Circ 2 EEV valve position</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%ivar(4,43)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -426,9 +360,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Compressor 3 on/off</td>
-    <td class="data">%dvar(1,17)%</td>
-    <td class="data">%dvar(2,17)%</td>
-    <td class="data">%dvar(4,39)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -439,9 +370,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Compressor 4 on/off</td>
-    <td class="data">%dvar(1,18)%</td>
-    <td class="data">%dvar(2,18)%</td>
-    <td class="data">%dvar(4,41)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -452,9 +380,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Pump 1 on/off</td>
-    <td class="data">%dvar(1,21)%</td>
-    <td class="data">%dvar(2,21)%</td>
-    <td class="data">%dvar(4,29)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -465,9 +390,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Pump 2 on/off</td>
-    <td class="data">%dvar(1,22)%</td>
-    <td class="data">%dvar(2,22)%</td>
-    <td class="data">%dvar(4,31)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -478,9 +400,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Evaporator Water Inlet Temperature</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%avar(4,30)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -491,9 +410,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Head Pressure Control</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%avar(4,36)%</td>
     <td></td>
     <td></td>
     <td></td>
@@ -504,9 +420,6 @@ function refreshFields( ) {
   </tr>
   <tr>
     <td class="label">Free Cooling Valve Position</td>
-    <td class="data">/</td>
-    <td class="data">/</td>
-    <td class="data">%avar(4,34)%</td>
     <td></td>
     <td></td>
     <td></td>

@@ -59,7 +59,8 @@ set grid
 #########################################################################################################
 
 datafile(n) = sprintf( "%s/chiller%02d.data", datadir, n )
-CHILLERS = "1 2 4"
+# CHILLERS = "1 2 4"
+CHILLERS = ""
 
 #########################################################################################################
 #
@@ -215,7 +216,8 @@ unset y2label ; unset y2range ; unset y2tics
 #
 #########################################################################################################
 
-CHILLERS = "4"
+# CHILLERS = "4"
+CHILLERS = ""
 
 set ylabel "Temperature (°C)"
 set yrange [0:35]
@@ -305,34 +307,34 @@ unset object 1 ; unset object 2 ; unset object 3 ; unset object 4
 #
 #########################################################################################################
 
-set ylabel "Supply temperature (°C)"
-set yrange [7:15]
-svgfile( range ) = sprintf( "%s/chillers-supply-temp-%s.svg", webdir, range )
-set title "Supply temperature
-set key left bottom            # Set the graph legend position
-
-set output svgfile( "all" )
-set format x "%m/%d"        # Label format for x-axis
-set xlabel "Date"
-plot \
-  datafile(1) using 1:4 with lines lw 1 lt   2 title "Chiller01", \
-  datafile(2) using 1:4 with lines lw 1 lt 101 title "Chiller02", \
-  datafile(4) using 1:4 with lines lw 1 lt 103 title "Chiller04"
-set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
-set output svgfile( "365d" )
-replot;
-set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
-set output svgfile( "50d" )
-replot;
-set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
-set output svgfile( "7d" )
-replot;
-set format x "%h"        # Label format for x-axis
-set xlabel "Time"
-set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
-set output svgfile( "24u" )
-replot;
-unset xrange
+# set ylabel "Supply temperature (°C)"
+# set yrange [7:15]
+# svgfile( range ) = sprintf( "%s/chillers-supply-temp-%s.svg", webdir, range )
+# set title "Supply temperature
+# set key left bottom            # Set the graph legend position
+# 
+# set output svgfile( "all" )
+# set format x "%m/%d"        # Label format for x-axis
+# set xlabel "Date"
+# plot \
+#   datafile(1) using 1:4 with lines lw 1 lt   2 title "Chiller01", \
+#   datafile(2) using 1:4 with lines lw 1 lt 101 title "Chiller02", \
+#   datafile(4) using 1:4 with lines lw 1 lt 103 title "Chiller04"
+# set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+# set output svgfile( "365d" )
+# replot;
+# set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+# set output svgfile( "50d" )
+# replot;
+# set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+# set output svgfile( "7d" )
+# replot;
+# set format x "%h"        # Label format for x-axis
+# set xlabel "Time"
+# set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+# set output svgfile( "24u" )
+# replot;
+# unset xrange
 
 
 
