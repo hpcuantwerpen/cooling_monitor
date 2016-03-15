@@ -5,6 +5,7 @@ use parent 'DEVICE::generic';
 use IO::File;
 use Net::SNMP;
 use POSIX qw(strftime);
+use Try::Tiny;
 
 #use Data::Dumper qw(Dumper);
 
@@ -266,7 +267,7 @@ $description = {
     206 => { info => "???",                                            unit => '',     remark => '????' },
     207 => { info => "???",                                            unit => '',     remark => '????' }
     },
-  computed => {
+  'computed' => {
      1 => { info => 'Temperature sensor 1', type => 'D', unit => 'ºC', remark => '' },
      2 => { info => 'Temperature sensor 2', type => 'D', unit => 'ºC', remark => '' },
     11 => { info => 'BIOS version',         type => 'S', unit => '',   remark => '' },
@@ -300,54 +301,62 @@ sub New
       'ip'          => $cooler_ip, 
       'label'       => $label,
       'description' => $description,
+      'valid'       => 1,             # This object contains valid data.
       'digital'     => { },
       'analog'      => { },
       'integer'     => { }
       };
 
-	# Open the SNMP-session
-	my ($session, $error) = Net::SNMP->session(
-             -hostname  => $cooler_ip,
-             -community => 'public',
-             -port      => 161,
-             -timeout   => 1,
-             -retries   => 3,
-			 -debug		=> 0x0,
-			 -version	=> 2,
-             -translate => [-timeticks => 0x0] 
-	         );
+    try {
+    	
+    	# Open the SNMP-session
+    	my ($session, $error) = Net::SNMP->session(
+                 -hostname  => $cooler_ip,
+                 -community => 'public',
+                 -port      => 161,
+                 -timeout   => 1,
+                 -retries   => 3,
+    			 -debug		=> 0x0,
+    			 -version	=> 2,
+                 -translate => [-timeticks => 0x0] 
+    	         );
+    
+        # Read the keys, first the digital ones then the analog ones.
+        foreach my $mykey ( sort keys %{ $description->{'digital'} } ) 
+        { 
+    	    my $oid = $OIDbase.$OIDdigital.$mykey.".0";
+    	    my $result = $session->get_request( $oid )
+                or die "SNMP service $oid is not available on the SNMP server $cooler_ip.\n";
+            $self->{'digital'}{$mykey} = $result->{$oid};       
+            # print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
+        }
+    
+        foreach my $mykey ( sort keys %{ $description->{'analog'} } ) 
+        { 
+        	my $oid = $OIDbase.$OIDanalog.$mykey.".0";
+    	    my $result = $session->get_request( $oid )
+                or die "SNMP service $oid is not available on the SNMP server $cooler_ip.\n";
+            $self->{'analog'}{$mykey} = $result->{$oid} / 10.;       
+        	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
+        }
+    
+        foreach my $mykey ( sort keys %{ $description->{'integer'} } ) 
+        { 
+        	my $oid = $OIDbase.$OIDinteger.$mykey.".0";
+    	    my $result = $session->get_request( $oid )
+    	        or die "SNMP service $oid is not available on the SNMP server $cooler_ip.\n";
+            $self->{'integer'}{$mykey} = $result->{$oid};       
+        	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}, "\n" );
+        }
+    
+        # Close the connection
+        $session->close;
 
-    # Read the keys, first the digital ones then the analog ones.
-    foreach my $mykey ( sort keys %{ $description->{'digital'} } ) 
-    { 
-	    my $oid = $OIDbase.$OIDdigital.$mykey.".0";
-	    my $result = $session->get_request( $oid )
-	        or die ("SNMP service $oid is not available on this SNMP server.");
-	    $self->{'digital'}{$mykey} = $result->{$oid};
-    	# print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
-    }
-
-    foreach my $mykey ( sort keys %{ $description->{'analog'} } ) 
-    { 
-    	my $oid = $OIDbase.$OIDanalog.$mykey.".0";
-	    my $result = $session->get_request( $oid ) 
-	        or die ("SNMP service $oid is not available on this SNMP server.");
-	    $self->{'analog'}{$mykey} = $result->{$oid} / 10.;
-    	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
-    }
-
-    foreach my $mykey ( sort keys %{ $description->{'integer'} } ) 
-    { 
-    	my $oid = $OIDbase.$OIDinteger.$mykey.".0";
-	    my $result = $session->get_request( $oid ) 
-	        or die ("SNMP service $oid is not available on this SNMP server.");
-	    $self->{'integer'}{$mykey} = $result->{$oid};
-    	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}, "\n" );
-    }
-
-    # Close the connection
-    $session->close;
-
+    } catch {
+        warn "Failed to read device data: $_";
+        $self->{'valid'} = 0;  # Something went wrong, the data is incomplete.
+    };
+    
     # Add the timestamp field
     $self->{'timestamp'} = strftime( "%Y%m%dT%H%MZ", gmtime );
     
@@ -412,17 +421,21 @@ sub Status
 	my $criticalAlarm = 0;
 	my $softAlarm     = 0;
 	
-	# Search for alarms
-	foreach my $key (keys %{$self->{'digital'}} ) {
-		if    ( $self->{'description'}{'digital'}{$key}{'type'} eq "SoftAlarm" )     { $softAlarm     = $softAlarm     || $self->{'digital'}{$key}; }
-		elsif ( $self->{'description'}{'digital'}{$key}{'type'} eq "CriticalAlarm" ) { $criticalAlarm = $criticalAlarm || $self->{'digital'}{$key}; }
-	} # end foreach my $key
+	if ( ! $self->{'valid'} ) {
+        $status = "Offline";
+    } else {
+    	# Search for alarms
+	    foreach my $key (keys %{$self->{'digital'}} ) {
+		    if    ( $self->{'description'}{'digital'}{$key}{'type'} eq "SoftAlarm" )     { $softAlarm     = $softAlarm     || $self->{'digital'}{$key}; }
+		    elsif ( $self->{'description'}{'digital'}{$key}{'type'} eq "CriticalAlarm" ) { $criticalAlarm = $criticalAlarm || $self->{'digital'}{$key}; }
+	    } # end foreach my $key
 	
-	# Summarise the result in status
-	if ( $criticalAlarm ) { $status = "Critical"; }
-	elsif ( $softAlarm )  { $status = "Non-Critical"; }
-    else                  { $status = "Normal" }
-	
+	    # Summarise the result in status
+	    if ( $criticalAlarm ) { $status = "Critical"; }
+	    elsif ( $softAlarm )  { $status = "Non-Critical"; }
+        else                  { $status = "Normal" }
+    }
+    
 	return $status;
 
 }

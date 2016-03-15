@@ -5,6 +5,7 @@ use parent 'DEVICE::generic';
 use IO::File;
 use Net::SNMP;
 use POSIX qw(strftime);
+use Try::Tiny;
 
 #use Data::Dumper qw(Dumper);
 
@@ -186,7 +187,8 @@ $description = {
    	57 => { info => 'water flow - low component',                     unit => 'l/s', remark => '' },
    	58 => { info => 'water flow',                                     unit => 'l/s', remark => '' },
    	80 => { info => 'transmission test variable',                     unit => '',    remark => 'Should be 4648' }
-    } 
+    },
+  'computed' => { } 
   };
 
 $OIDbase = "1.3.6.1.4.1.9839.2.1.";
@@ -215,50 +217,58 @@ sub New
       'ip'          => $chiller_ip, 
       'label'       => $label,
       'description' => $description,
+      'valid'       => 1,             # This object contains valid data.
       'digital'     => { },
       'analog'      => { },
       'integer'     => { }
       };
 
-	# Open the SNMP-session
-	my ($session, $error) = Net::SNMP->session(
-             -hostname  => $chiller_ip,
-             -community => 'public',
-             -port      => 161,
-             -timeout   => 1,
-             -retries   => 3,
-			 -debug		=> 0x0,
-			 -version	=> 2,
-             -translate => [-timeticks => 0x0] 
-	         );
+    try {
 
-    # Read the keys, first the digital ones then the analog ones.
-    foreach my $mykey ( sort keys %{ $description->{'digital'} } ) { 
-	    my $oid = $OIDbase.$OIDdigital.$mykey.".0";
-	    my $result = $session->get_request( $oid )
-	        or die ("SNMP service $oid is not available on this SNMP server.");
-	    $self->{'digital'}{$mykey} = $result->{$oid};
-    	# print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
-    }
+    	# Open the SNMP-session
+    	my ($session, $error) = Net::SNMP->session(
+                 -hostname  => $chiller_ip,
+                 -community => 'public',
+                 -port      => 161,
+                 -timeout   => 1,
+                 -retries   => 3,
+    			 -debug		=> 0x0,
+    			 -version	=> 2,
+                 -translate => [-timeticks => 0x0] 
+    	         );
+    
+        # Read the keys, first the digital ones then the analog ones.
+        foreach my $mykey ( sort keys %{ $description->{'digital'} } ) { 
+    	    my $oid = $OIDbase.$OIDdigital.$mykey.".0";
+    	    my $result = $session->get_request( $oid )
+    	        or die "SNMP service $oid is not available on the SNMP server $chiller_ip.\n";
+            $self->{'digital'}{$mykey} = $result->{$oid};       
+        	# print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
+        }
+    
+        foreach my $mykey ( sort keys %{ $description->{'analog'} } ) { 
+        	my $oid = $OIDbase.$OIDanalog.$mykey.".0";
+    	    my $result = $session->get_request( $oid )
+    	        or die "SNMP service $oid is not available on the SNMP server $chiller_ip.\n";
+            $self->{'analog'}{$mykey} = $result->{$oid} / 10.;       
+        	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
+        }
+        
+        foreach my $mykey ( sort keys %{ $description->{'integer'} } ) { 
+        	my $oid = $OIDbase.$OIDinteger.$mykey.".0";
+    	    my $result = $session->get_request( $oid )
+    	        or die "SNMP service $oid is not available on the SNMP server $chiller_ip.\n";
+            $self->{'integer'}{$mykey} = $result->{$oid};       
+        	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}, "\n" );
+        }
+        
+        # Close the connection
+        $session->close;
 
-    foreach my $mykey ( sort keys %{ $description->{'analog'} } ) { 
-    	my $oid = $OIDbase.$OIDanalog.$mykey.".0";
-	    my $result = $session->get_request( $oid ) 
-	        or die ("SNMP service $oid is not available on this SNMP server.");
-	    $self->{'analog'}{$mykey} = $result->{$oid} / 10.;
-    	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
-    }
-    
-    foreach my $mykey ( sort keys %{ $description->{'integer'} } ) { 
-    	my $oid = $OIDbase.$OIDinteger.$mykey.".0";
-	    my $result = $session->get_request( $oid ) 
-	        or die ("SNMP service $oid is not available on this SNMP server.");
-	    $self->{'integer'}{$mykey} = $result->{$oid};
-    	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}, "\n" );
-    }
-    
-    # Close the connection
-    $session->close;
+    } catch {
+        warn "Failed to read device data: $_";
+        $self->{'valid'} = 0;  # Something went wrong, the data is incomplete.
+    };
 
     # Add the timestamp field
     $self->{'timestamp'} = strftime( "%Y%m%dT%H%MZ", gmtime );
@@ -322,7 +332,8 @@ sub Status
 	
 	my $status = "";
 	
-	if    ( $self->{'digital'}->{103} != 0  ) { $status = "Critical"; }
+	if    ( ! $self->{'valid'} )              { $status = "Offline"; }
+    elsif ( $self->{'digital'}->{103} != 0  ) { $status = "Critical"; }
 	elsif ( $self->{'digital'}->{102} != 0  ) { $status = "Non-Critical"; }
 	else                                      { $status = "Normal" };
 	

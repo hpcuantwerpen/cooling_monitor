@@ -173,17 +173,16 @@ generate_rawdata( \%devices, $webdir, $alarmMssgsRef );
 
 #
 # Create the log files for the graphs.
+# Don't log if we don't have valid data for now (this avoids problems when
+# making the plots)
 #
-#$chiller01data->Log( "$datadir/chiller01.data" );
-#$chiller02data->Log( "$datadir/chiller02.data" );
-#$chiller04data->Log( "$datadir/chiller04.data" );
-$cooler01data->Log( "$datadir/cooler01.data" );
-$cooler02data->Log( "$datadir/cooler02.data" );
-#$ahu01data->Log( "$datadir/ahu01.data" );
-#$ahu02data->Log( "$datadir/ahu02.data" );
-$ahu03data->Log( "$datadir/ahu03.data" );
-$ahu04data->Log( "$datadir/ahu04.data" );
-$ahu05data->Log( "$datadir/ahu05.data" );
+$cooler01data->{'valid'}  and $cooler01data->Log( "$datadir/cooler01.data" );
+$cooler02data->{'valid'}  and $cooler02data->Log( "$datadir/cooler02.data" );
+# $ahu01data->{'valid'}     and $ahu01data->Log( "$datadir/ahu01.data" );
+# $ahu02data->{'valid'}     and $ahu02data->Log( "$datadir/ahu02.data" );
+$ahu03data->{'valid'}     and $ahu03data->Log( "$datadir/ahu03.data" );
+$ahu04data->{'valid'}     and $ahu04data->Log( "$datadir/ahu04.data" );
+$ahu05data->{'valid'}     and $ahu05data->Log( "$datadir/ahu05.data" );
 
 #
 #
@@ -211,21 +210,25 @@ close( $gnuplotPipe );
 # Create full log files in case we ever need more data.
 # These files are created per month.
 #
-# $chiller01data->FullLog( $datadir );
-# $chiller02data->FullLog( $datadir );
-# $chiller04data->FullLog( $datadir );
-$cooler01data->FullLog( $datadir );
-$cooler02data->FullLog( $datadir );
-# $ahu01data->FullLog( $datadir );
-# $ahu02data->FullLog( $datadir );
-$ahu03data->FullLog( $datadir );
-$ahu04data->FullLog( $datadir );
-$ahu05data->FullLog( $datadir );
+$cooler01data->{'valid'}  and $cooler01data->FullLog( $datadir );
+$cooler01data->{'valid'}  and $cooler02data->FullLog( $datadir );
+# $ahu01data->{'valid'}     and $ahu01data->FullLog( $datadir );
+# $ahu02data->{'valid'}     and $ahu02data->FullLog( $datadir );
+$ahu03data->{'valid'}     and $ahu03data->FullLog( $datadir );
+$ahu04data->{'valid'}     and $ahu04data->FullLog( $datadir );
+$ahu05data->{'valid'}     and $ahu05data->FullLog( $datadir );
+
+################################################################################
+#
+# Install/update all web pages
+# - Some are generated based on the loaded devices, from templates in TEMPLATES
+# - Others are just copied from the WEB subdirectory and do not depend on this
+#   script nor the devices that are being monitored through this script.
+#
 
 #
-#
-# Re-generate the overview web page if needed
-#
+# Re-generate the overview web page if needed (from TEMPLATES/monitor_template.html)
+# We'll do this if either the template file or this script has changed since the last update
 #
 
 my $mtime_template =  (stat("$codedir/TEMPLATES/monitor_template.html")->mtime);
@@ -240,13 +243,10 @@ if ( ( ! (-e "$webdir/index.html") ) ||
 } # End of the re-generation of the index web page.
 
 #
+# Re-generate the details web pages (from TEMPLATES/details_template.html)
 #
-# Re-generate the details web pages
-#
-#
-
-#
-# We'll rebuild all of them as soon as one is missing or out-of-date.
+# We'll rebuild all of them as soon as one is missing or out-of-date with 
+# respect to the template or this script.
 #
 
 my $rebuildDetails = 0;
@@ -283,10 +283,15 @@ if ( $rebuildDetails ) {
 
 
 #
+# Synchronise with the WEB subdirectory.
+#
 # Check the web directory and copy other web files (from the WEB subdirectory of 
 # the code) to that directory if needed.
 # This doesn't take much time and ensures that changes to the web code will carry
 # formward to the web server directory.
+# Note that these 
+#
+# TODO: Make this more robust and check for all files.
 #
 
 if ( ( ! (-e "$webdir/graphs.html") ) || 
@@ -592,7 +597,7 @@ sub generate_rawdata {
     @alarmMssgs = sort { (($res = ($a->{level} cmp $b->{level})) == 0) ? ($deviceOrder{$a->{source}} <=> $deviceOrder{$b->{source}}) : $res } @{$alarmMssgsRef};
     
     #
-    # Now we an build the raw data "web" page.
+    # Now we can build the raw data "web" page.
     #
     
     my @outputpage = ( );
@@ -626,8 +631,10 @@ sub generate_rawdata {
         push @outputpage, "  <div>Digital variables\n";
         foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'digital'} } ) { 
             $label = "RD\_D$devkey\_D$mykey";
-            ($value, $valtext, $remark) = $device->DVar( $mykey ); # In fact, we don't need $remark here...
-            ! length( $valtext ) || ( $value = join( '', $value, ' - ', $valtext ) ); # Add textual value
+            if ( $device->{'valid'} ) {
+                ($value, $valtext, $remark) = $device->DVar( $mykey ); # In fact, we don't need $remark here...
+                ! length( $valtext ) || ( $value = join( '', $value, ' - ', $valtext ) ); # Add textual value
+            } else { $value = "/"; }
             push @outputpage, "    <div id=\"$label\">$value</div>\n";
         }    
         push @outputpage, "  </div>\n";
@@ -636,7 +643,9 @@ sub generate_rawdata {
         push @outputpage, "  <div>Analog variables\n";
         foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'analog'} } ) { 
             $label = "RD\_D$devkey\_A$mykey";
-            ($value, $units, $remark) = $device->AVar( $mykey ); # In fact, we don't need $units and $remark here...
+            if ( $device->{'valid'} ) {
+                ($value, $units, $remark) = $device->AVar( $mykey ); # In fact, we don't need $units and $remark here...
+            } else { $value = "/"; }
             push @outputpage, "    <div id=\"$label\">$value</div>\n";
         }    
         push @outputpage, "  </div>\n";
@@ -645,7 +654,9 @@ sub generate_rawdata {
         push @outputpage, "  <div>Integer variables\n";
         foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'integer'} } ) { 
             $label = "RD\_D$devkey\_I$mykey";
-            ($value, $units, $remark) = $device->IVar( $mykey ); # In fact, we don't need $units and $remark here...
+            if ( $device->{'valid'} ) {
+                ($value, $units, $remark) = $device->IVar( $mykey ); # In fact, we don't need $units and $remark here...
+            } else { $value = "/"; }
             push @outputpage, "    <div id=\"$label\">$value</div>\n";
         }    
         push @outputpage, " </div>\n";
@@ -836,11 +847,11 @@ sub generate_detail_page {
             my $withdata = $cmds[3];
             my $nodata   = $cmds[4];
             # + Get the keys of each type and sort them numerically.
-            @Dkeys = sort { $a <=> $b } ( keys %{$device->{'digital'}} );
-            @Akeys = sort { $a <=> $b } ( keys %{$device->{'analog'}} );
-            @Ikeys = sort { $a <=> $b } ( keys %{$device->{'integer'}} );
-            @Ckeys = sort { $a <=> $b } ( keys %{$device->{'computed'}} );
-            # + Determine the largest of the number of keys of the four variable types.
+            @Dkeys = sort { $a <=> $b } ( keys %{$device->{'description'}{'digital'}} );
+            @Akeys = sort { $a <=> $b } ( keys %{$device->{'description'}{'analog'}} );
+            @Ikeys = sort { $a <=> $b } ( keys %{$device->{'description'}{'integer'}} );
+            @Ckeys = sort { $a <=> $b } ( keys %{$device->{'description'}{'computed'}} );
+            # + Determine the largest of the number of keys of the three variable types.
             $max = ( $#Dkeys > $#Akeys ) ? $#Dkeys : $#Akeys;
             $max = ( $max > $#Ikeys )    ? $max    : $#Ikeys;
             $max = ( $max > $#Ckeys )    ? $max    : $#Ckeys;

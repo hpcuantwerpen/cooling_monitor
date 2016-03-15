@@ -28,6 +28,7 @@ sub New
 	
     my $self = {
       'description' => $description,
+      'valid'       => 1,             # This object contains valid data.
       'digital'     => { },
       'analog'      => { },
       'integer'     => { }
