@@ -291,28 +291,45 @@ if ( $rebuildDetails ) {
 # formward to the web server directory.
 # Note that these 
 #
-# TODO: Make this more robust and check for all files.
-#
 
-if ( ( ! (-e "$webdir/graphs.html") ) || 
-     ( (stat("$codedir/WEB/graphs.html")->mtime) > (stat("$webdir/graphs.html")->mtime) ) || 
-     ( $mtime_code > (stat("$webdir/graphs.html")->mtime) ) ) {
-    # Copy the files in the WEB subdirectory of the code to the web server directory.
-    # We could name them one by one, but then we should not forget to adapt this bit of 
-    # code when we add files. 
-    # This loop is more robust.
-    # print "Updating web pages from WEB subdirectory.\n";
-    opendir( DIR, "$codedir/WEB" );
-    my @filestocopy = readdir( DIR );
-    closedir( DIR );
-    # Remove names that start with a . from the list. This includes . and ..,
-    # but may also include hidden files put in place by the IDE during 
-    # development.
-    @filestocopy = grep( !/^\./, @filestocopy );
-    # Finally do the copy.
-    foreach my $file (@filestocopy) { 
-        copy( "$codedir/WEB/$file", "$webdir/$file" );
-    }
+# if ( ( ! (-e "$webdir/graphs.html") ) || 
+#      ( (stat("$codedir/WEB/graphs.html")->mtime) > (stat("$webdir/graphs.html")->mtime) ) || 
+#      ( $mtime_code > (stat("$webdir/graphs.html")->mtime) ) ) {
+#     # Copy the files in the WEB subdirectory of the code to the web server directory.
+#     # We could name them one by one, but then we should not forget to adapt this bit of 
+#     # code when we add files. 
+#     # This loop is more robust.
+#     # print "Updating web pages from WEB subdirectory.\n";
+#     opendir( DIR, "$codedir/WEB" );
+#     my @filestocopy = readdir( DIR );
+#     closedir( DIR );
+#     # Remove names that start with a . from the list. This includes . and ..,
+#     # but may also include hidden files put in place by the IDE during 
+#     # development.
+#     @filestocopy = grep( !/^\./, @filestocopy );
+#     # Finally do the copy.
+#     foreach my $file (@filestocopy) { 
+#         copy( "$codedir/WEB/$file", "$webdir/$file" );
+#     }
+# }
+
+# Get the list of files in the WEB direcotry.
+opendir( DIR, "$codedir/WEB" );
+my @filestocopy = readdir( DIR );
+closedir( DIR );
+# Remove names that start with a . from the list. This includes . and ..,
+# but may also include hidden files put in place by the IDE during 
+# development.
+@filestocopy = grep( !/^\./, @filestocopy );
+# Now check which files need to be copied again and do the copy.
+# We don't copy more than needed.
+foreach my $file (@filestocopy) {
+	my $sourcefile = "$codedir/WEB/$file";
+	my $targetfile = "$webdir/$file";
+	if ( ( ! (-e $targetfile) ) ||   
+	      ( (stat($sourcefile)->mtime) > (stat($targetfile)->mtime) ) ) { 
+        copy( $sourcefile, $targetfile );
+	}
 }
 
 #
