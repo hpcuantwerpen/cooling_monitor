@@ -1,0 +1,102 @@
+Miniscripts in the experiments folder
+=====================================
+
+These scripts are usually designed to run on themselves, so simply execute
+them:
+./miniscriptXX.pl
+
+
+Main code in monitor
+====================
+
+This code cannot easily be tested from a local desktop since it is not easily
+feasible to create the necessary port forwarding and IP routing on the desktop.
+Hence this code should be tested on the login nodes of the cluster, which is 
+why we developed it in en Eclipse synchronized project even if PTP is not
+really designed to work well with Perl.
+
+There is also a test setup on the vsc20001 account, located in
+cd /data/antwerpen/200/vsc20001/test-cooling-monitor
+
+Fetching test data
+------------------
+
+It is best to start from recent copies of the data files from the actively 
+running code. This is particularly important for the short logs as they are 
+used to generate the graphs through GNUplot and changes to the GNUplot code
+can only be tested well with a reasonably complete data set. It is currently
+less important for the full logs as the code will nicely start new logs if it
+doesn't find an existing log file for the current data set. 
+* Note that the monitoring does not always run on the same master node of 
+  Hopper. We need to take that into account when fetching the data! The best 
+  is to use the IP address 10.28.236.8.
+* The data files are in /opt/icinga/cooling/data
+* Make your life easy and start an ssh agent first with a key that gives access
+  to the vsc20001 account.
+* Then you can use the get_testdata.sh script in the project directory to fetch
+  the data from the install directory on the cluster master node. Add YYmm to 
+  also fetch the full log files for that month.
+
+ssh-agent
+ssh-add ~/.ssh/id_rsa_cluster_UAntwerpen
+scp -i ~/.ssh/id_rsa_cluster_UAntwerpen vsc20001@10.28.236.8:/opt/icinga/cooling/data/cooler01.data data
+./get_testdata.sh 1601
+
+Setting up a web server on the login nodes and proxy on the laptop
+------------------------------------------------------------------
+
+* Login with ssh while creating a tunnel:
+  An easy way to avoid much typing is to define a host in .ssh/config:
+
+  Host ho-webproxy
+      Hostname login4-hopper.uantwerpen.be
+      User vsc20259
+      IdentityFile ~/.ssh/id_rsa_cluster_UAntwerpen
+      LocalForward localhost:8888 localhost:8888
+
+  All you then need is simply ssh ho-webproxy
+
+* Go to the web page directory, e.g. ${VSC_DATA}/Monitor/V2/www
+
+* Start a python SimpleHTTPServer web server on port 8888 (the port chosen with 
+  ssh above) via the script start_webserver (the 8888 is hard-coded in that script!)
+
+cd ${VSC_DATA}/Monitor/V2/www
+./start_webserver
+
+  The script is needed since otherwise SipleHTTPServer doesn't serve the
+  svg pictures with the correct mime type.
+  
+* Now simply open a browser on the laptop and surf to localhost:8888
+
+The alternative is to use the proxy mechanism that is also used to access
+the web interfaces of the iLO's etc. on the cluster and then use the
+URL 10.28.236.13:8888 assuming the SimpleHTTPServer runs on login4 of
+Hopper, port 8888.
+
+
+
+Running the code
+----------------
+
+* You'll need to login again as the web proxy is blocking the other shell.
+
+* You'll need recent versions of perl and gnuplot. We tested with Perl 5.20, 
+  and gnuplot 5.0 is the minimum for gnuplot.
+  
+module load hopper/2015a
+module load Perl/5.20.1-intel-2015a
+module load gnuplot/5.0.0-intel-2015a
+  
+* Then all you need to do is to go to ${VSC_DATA}/Monitor/V2/monitor
+  and run getdata.pl
+  
+cd ${VSC_DATA}/Monitor/V2/monitor
+./getdata.pl
+
+
+
+
+
+
+
