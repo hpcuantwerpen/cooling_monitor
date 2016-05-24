@@ -395,6 +395,128 @@ unset y2range ; unset y2label ; unset y2tics
 
 
 #########################################################################################################
+#
+# Coolers compared: Supply temperature
+#
+#########################################################################################################
+
+set yrange  [10:40]
+set ylabel  "temperature (°C)"
+svgfile( range ) = sprintf( "%s/coolers-supply-temp-%s.svg", webdir, range )
+set title          "Coolers: Supply temperature (degC)"
+
+set object 1 rectangle from graph 0,0          to graph 1,(17./30.)  @data_safe
+set object 2 rectangle from graph 0,(17./30.)  to graph 1,(19./30.)  @data_warning
+set object 3 rectangle from graph 0,(19./30.)  to graph 1,1          @data_critical
+
+
+set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
+plot \
+  datafile(1) using 1:4 with lines lw 1 lt   2 title 'cooler01', \
+  datafile(2) using 1:4 with lines lw 1 lt 101 title 'cooler02'
+set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "365d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "50d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "7d" )
+replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
+set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "24u" )
+replot;
+unset xrange
+unset object 1; unset object 2; unset object 3
+
+
+#########################################################################################################
+#
+# Coolers compared: Return temperature
+#
+#########################################################################################################
+
+set yrange  [20:50]
+set ylabel  "temperature (°C)"
+svgfile( range ) = sprintf( "%s/coolers-return-temp-%s.svg", webdir, range )
+set title          "Coolers: Return temperature (degC)"
+
+set object 1 rectangle from graph 0,0          to graph 1,(22./30.)  @data_safe
+set object 2 rectangle from graph 0,(22./30.)  to graph 1,(25./30.)  @data_warning
+set object 3 rectangle from graph 0,(25./30.)  to graph 1,1          @data_critical
+
+
+set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
+plot \
+  datafile(1) using 1:2 with lines lw 1 lt   2 title 'cooler01', \
+  datafile(2) using 1:2 with lines lw 1 lt 101 title 'cooler02'
+set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "365d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "50d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "7d" )
+replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
+set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "24u" )
+replot;
+unset xrange
+unset object 1; unset object 2; unset object 3
+
+
+#########################################################################################################
+#
+# Coolers compared: Inlet water temperature
+#
+#########################################################################################################
+
+set yrange  [5:20]
+set ylabel  "temperature (°C)"
+svgfile( range ) = sprintf( "%s/coolers-inlet-temp-%s.svg", webdir, range )
+set title          "Coolers: Inlet water temperature (degC)"
+
+set object 1 rectangle from graph 0,0         to graph 1,(3./15.)  @data_critical
+set object 2 rectangle from graph 0,(3./15.)  to graph 1,(5./15.)  @data_warning
+set object 3 rectangle from graph 0,(5./15.)  to graph 1,(10./15.) @data_safe
+set object 4 rectangle from graph 0,(10./15.) to graph 1,(12./15.) @data_warning
+set object 5 rectangle from graph 0,(12./15.) to graph 1,1         @data_critical
+
+
+set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
+plot \
+  datafile(1) using 1:7 with lines lw 1 lt   2 title 'cooler01', \
+  datafile(2) using 1:7 with lines lw 1 lt 101 title 'cooler02'
+set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "365d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "50d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "7d" )
+replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
+set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "24u" )
+replot;
+unset xrange
+unset object 1; unset object 2; unset object 3; unset object 4; unset object 5
+
+
+#########################################################################################################
 #########################################################################################################
 #
 # Plots for the Air Handling Units
