@@ -647,6 +647,15 @@ sub generate_rawdata {
         }    
         push @outputpage, " </div>\n";
         
+        # Do the computed variables
+        push @outputpage, "  <div>Computed variables\n";
+        foreach my $mykey ( sort {$a <=> $b} keys %{ $device->{'description'}{'computed'} } ) { 
+            $label = "RD\_D$devkey\_C$mykey";
+            ($value, $type,$units, $remark) = $device->CVar( $mykey ); # In fact, we don't need $type, $units and $remark here...
+            push @outputpage, "    <div id=\"$label\">$value</div>\n";
+        }    
+        push @outputpage, " </div>\n";
+        
         # Set the expiration time
         $timestampExp = strftime( "%Y-%m-%dT%H:%M:%SZ", 
                                   gmtime( time() + $dataValid ) );     # Time stamp in Zulu time in the format for JS date.Parse
@@ -698,7 +707,7 @@ sub generate_monitor_root {
             ($value, $units, $remark) = $devices->{$2}->AVar( $3 );    # $value is not needed here.
             #if ( $units ne '') { $body = $body.'&nbsp;'.$units; }
             ! length( $units ) || ( $body = $body.'&nbsp;'.$units ); # Trick from a Perl book, should be more efficient than the above if.
-            if ( $remark ne '') {
+            if ( $remark ne '' ) {
                 $pre =~ s/\"data\"/\"data dataRemark\"/g;
                 $body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
             }
@@ -713,7 +722,7 @@ sub generate_monitor_root {
             ($value, $units, $remark) = $devices->{$2}->IVar( $3 );    # $value is not needed here.
             #if ( $units ne '') { $body = $body.'&nbsp;'.$units; }
             ! length( $units ) || ( $body = $body.'&nbsp;'.$units );
-            if ( $remark ne '') {
+            if ( $remark ne '' ) {
                 $pre =~ s/\"data\"/\"data dataRemark\"/g;
                 $body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
             }
@@ -726,11 +735,27 @@ sub generate_monitor_root {
             $post   = $4;
             $body = "<span class=\"dataItem\" id=\"D$2\_D$3\"></span>";
             ($value, $valtext, $remark) = $devices->{$2}->DVar( $3 );   # $value and $valtext are not needed here.
-            if ( $remark ne '') {
+            if ( $remark ne '' ) {
                 $pre =~ s/\"data\"/\"data dataRemark\"/g;
                 $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>';
             }
             #$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
+            push @outputpage, $pre.$body.$post."\n";
+        }
+        elsif ( $line =~ /(.*)\%cvar\((\d+),(\d+)\)\%(.*)/ ) {
+            $pre    = $1;
+            # $devnum = $2;
+            # $varnum = $3;
+            $post   = $4;
+            $body = "<span class=\"dataItem\" id=\"D$2\_C$3\"></span>";
+            ($value, $type, $units, $remark) = $devices->{$2}->CVar( $3 );   # $value and $type are not needed here.
+            #if ( $units ne '') { $body = $body.'&nbsp;'.$units; }
+            ! length( $units ) || ( $body = $body.'&nbsp;'.$units );
+            if ( $remark ne '' ) {
+                $pre =~ s/\"data\"/\"data dataRemark\"/g;
+                $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>';
+            }
+            #$line =~ s/(.*)\%cvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
             push @outputpage, $pre.$body.$post."\n";
         }
         elsif ( $line =~ /^( *)(.*)\%status\((\d+)\)\%(.*)/ ) {
@@ -811,9 +836,11 @@ sub generate_detail_page {
             @Dkeys = sort { $a <=> $b } ( keys %{$device->{'digital'}} );
             @Akeys = sort { $a <=> $b } ( keys %{$device->{'analog'}} );
             @Ikeys = sort { $a <=> $b } ( keys %{$device->{'integer'}} );
-            # + Determine the largest of the number of keys of the three variable types.
+            @Ckeys = sort { $a <=> $b } ( keys %{$device->{'computed'}} );
+            # + Determine the largest of the number of keys of the four variable types.
             $max = ( $#Dkeys > $#Akeys ) ? $#Dkeys : $#Akeys;
             $max = ( $max > $#Ikeys )    ? $max    : $#Ikeys;
+            $max = ( $max > $#Ckeys )    ? $max    : $#Ckeys;
             # + Loop over the rows of the table to generate.
             for ( my $c = 0; $c <= $max; $c++ ) {
                 # ++ Start of output record
@@ -859,6 +886,24 @@ sub generate_detail_page {
                     $label = $device->{'description'}{'integer'}{$key}{'info'};
                     $body = "<span class=\"dataItem\" id=\"D$devkey\_I$key\"></span>";
                     ($value, $units, $remark) = $device->IVar( $key );            # $value is not needed here.
+                    #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
+                    ! length( $units ) || ( $body = $body.'&nbsp;'.$units );      # Add units to the value (if units are defined)
+                    if ( $remark ne '') {
+                        $workline =~ s/\"data\"/\"data dataRemark\"/g;
+                        $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>'; # Add a remark.
+                    }
+                    $workline =~ s/\%number\%/$key/;
+                    $workline =~ s/\%label\%/$label/;
+                    $workline =~ s/\%value\%/$body/;                    
+                    push @outputpage, $workline;                
+                } else { push @outputpage, $nodata; }
+                # ++ Computed variable (if there is one)
+                if ( $c <= $#Ckeys ) {
+                    $workline = $withdata;
+                    $key = $Ckeys[$c];
+                    $label = $device->{'description'}{'computed'}{$key}{'info'};
+                    $body = "<span class=\"dataItem\" id=\"D$devkey\_C$key\"></span>";
+                    ($value, $type, $units, $remark) = $device->CVar( $key );            # $value is not needed here.
                     #if ( $units ne '') { $body = join( '', $body, '&nbsp;', $units ); }
                     ! length( $units ) || ( $body = $body.'&nbsp;'.$units );      # Add units to the value (if units are defined)
                     if ( $remark ne '') {

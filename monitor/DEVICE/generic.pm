@@ -2,9 +2,10 @@ package DEVICE::generic;
 
 
 $description = {
-  'digital' => { } ,
-  'analog'  => {  },
-  'integer' => { } 
+  'digital'  => { } ,
+  'analog'   => { },
+  'integer'  => { },
+  'computed' => { }
   };
   
 $OIDdigital = "1.";
@@ -127,14 +128,28 @@ sub AVar
 
 sub IVar
 {
-	
-	my $self = $_[0];
-	my $var  = $_[1];
-	
-	return ( $self->{'integer'}{$var}, 
-	         $self->{'description'}{'integer'}{$var}{'unit'}, 
-	         $self->{'description'}{'integer'}{$var}{'remark'} );
-	
+    
+    my $self = $_[0];
+    my $var  = $_[1];
+    
+    return ( $self->{'integer'}{$var}, 
+             $self->{'description'}{'integer'}{$var}{'unit'}, 
+             $self->{'description'}{'integer'}{$var}{'remark'} );
+    
+}
+
+
+sub CVar
+{
+    
+    my $self = $_[0];
+    my $var  = $_[1];
+    
+    return ( $self->{'computed'}{$var}, 
+             $self->{'description'}{'computed'}{$var}{'type'}, 
+             $self->{'description'}{'computed'}{$var}{'unit'}, 
+             $self->{'description'}{'computed'}{$var}{'remark'} );
+    
 }
 
 

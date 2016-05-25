@@ -1,0 +1,38 @@
+#! /bin/bash
+# Adapt this script to update the installed cooling monitor from the version in $VSC_DATA of
+# the vsc20001-account.
+# The script can run from the $VSC_DATA/test-cooling-monitor directory as it does the
+# nessecary directory changes itself.
+#
+# But it is better to first clean-up old monitor-old subdirectories!
+@
+
+echo "Preparing the update..."
+
+cd /opt/icinga/cooling
+
+cp -r /data/antwerpen/200/vsc20001/test-cooling-monitor/monitor monitor-new
+
+# Clean-up from eclipse
+find . -name .ptp-sync-folder -exec rm -rf '{}' \; 
+
+# Now waiting for the next update to finish, just to be sure we don't overwrite while the script runs
+reference=`ls -l www/rawdata.txt`
+while [ "`ls -l www/rawdata.txt`" == "$reference" ] ; do echo "Waiting for update rawdata.txt"; sleep 10; done
+echo "Waiting another 60 seconds to give the script a chance to finish"
+sleep 60
+echo "Starting update..."
+
+
+# Specific for the 2016-05-25 update: Some of the log file formats have changed so restart those logs
+# mv data/cooler01-1605.log data/cooler01-1605.1.log
+# mv data/cooler02-1605.log data/cooler02-1605.1.log
+
+# Clean up www subdirectory
+/bin/rm -f www/*
+
+# Now move the new monitor scripts into place
+mv monitor monitor-old
+mv monitor-new monitor
+
+echo "Done updating."

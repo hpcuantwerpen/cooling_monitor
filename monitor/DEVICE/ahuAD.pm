@@ -23,7 +23,8 @@ $description = {
      12 => { info => 'Temperature set point ',  unit => 'ºC',  remark => '' },
      35 => { info => 'cooling 0-10vdc ',        unit => '',    remark => 'Unknown units' }
     },
-    'integer' => { } 
+    'integer' => { },
+    'computed' => { }
   };
 
 $OIDdigital = "1.";
