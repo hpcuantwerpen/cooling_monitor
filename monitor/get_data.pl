@@ -31,13 +31,17 @@ use DEVICE::ahuAD;
 #
 # Set some locations etc.
 #
-my $datadir   = "../data";
-my $webdir    = "../www" ;
-my $codedir   = dirname( realpath( $0 ) );
-my $dataValid = 310;                        # Time the data should remain valid as indicated in the data file.   
-my $mailto    = 'kurt.lust@uantwerpen.be';  # Production use: cooler@calcua.uantwerpen.be
-#my $mailto     = 'cooler@calcua.uantwerpen.be';
-my $mailx     = '/bin/mailx';
+my $datadir    = "../data";
+my $webdir     = "../www" ;
+my $codedir    = dirname( realpath( $0 ) );
+print( "Codedir: $codedir\n" );
+my $dataValid  = 310;                        # Time the data should remain valid as indicated in the data file.   
+if ( $codedir =~ /\/opt\/.*/ ) {
+  my $mailto   = 'cooler@calcua.ua.ac.be';   # Production use: cooler@calcua.ua.ac.be   
+} else {
+  my $mailto   = 'kurt.lust@uantwerpen.be';  # Test use 
+}
+my $mailx      = '/bin/mailx';
 
 #
 # Overwrite the defaults with values specified on the command line (if any)
