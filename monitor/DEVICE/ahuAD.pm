@@ -21,7 +21,7 @@ $description = {
       4 => { info => 'air return temperature ', unit => 'ºC',  remark => '' },
       5 => { info => 'air supply temperature ', unit => 'ºC',  remark => '' },
      12 => { info => 'Temperature set point ',  unit => 'ºC',  remark => '' },
-     35 => { info => 'cooling 0-10vdc ',        unit => '',    remark => 'Unknown units' }
+     35 => { info => 'cooling 0-10vdc ',        unit => '',    remark => 'Proportional to water valve, 10=100%?' }
     },
     'integer' => { },
     'computed' => { }

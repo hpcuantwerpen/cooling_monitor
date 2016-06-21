@@ -34,7 +34,7 @@ use DEVICE::ahuAD;
 my $datadir    = "../data";
 my $webdir     = "../www" ;
 my $codedir    = dirname( realpath( $0 ) );
-print( "Codedir: $codedir\n" );
+#print( "Codedir: $codedir\n" );
 my $dataValid  = 310;                        # Time the data should remain valid as indicated in the data file.   
 if ( $codedir =~ /\/opt\/.*/ ) {
   my $mailto   = 'cooler@calcua.ua.ac.be';   # Production use: cooler@calcua.ua.ac.be   

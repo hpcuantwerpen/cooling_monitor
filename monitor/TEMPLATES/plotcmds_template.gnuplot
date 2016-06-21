@@ -560,39 +560,6 @@ set output svgfile( "24u" )
 replot;
 unset xrange
 
-#########################################################################################################
-#
-# Return humidity
-#
-#########################################################################################################
-
-set ylabel "Return humidity (%)"
-set yrange [0:100]
-set title "AHU Return humidity"
-svgfile( range ) = sprintf( "%s/ahu-return-hum-%s.svg", webdir, range )
-
-set output svgfile( "all" )
-set format x "%m/%d"        # Label format for x-axis
-set xlabel "Date"
-plot \
-  datafile(3) using 1:3 with lines lw 1 lt 3 title 'AHU 3', \
-  datafile(4) using 1:3 with lines lw 1 lt 4 title 'AHU 4', \
-  datafile(5) using 1:3 with lines lw 1 lt 5 title 'AHU 5'
-set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
-set output svgfile( "365d" )
-replot;
-set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
-set output svgfile( "50d" )
-replot;
-set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
-set output svgfile( "7d" )
-replot;
-set format x "%h"        # Label format for x-axis
-set xlabel "Time"
-set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
-set output svgfile( "24u" )
-replot;
-unset xrange
 
 #########################################################################################################
 #
@@ -612,6 +579,76 @@ plot \
   datafile(3) using 1:4 with lines lw 1 lt 3 title 'AHU 3', \
   datafile(4) using 1:4 with lines lw 1 lt 4 title 'AHU 4', \
   datafile(5) using 1:4 with lines lw 1 lt 5 title 'AHU 5'
+set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "365d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "50d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "7d" )
+replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
+set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "24u" )
+replot;
+unset xrange
+
+
+#########################################################################################################
+#
+# Valve status (Cooling 0-10vdc)
+#
+#########################################################################################################
+
+set ylabel "Supply temperature (°C)"
+set yrange [-0.5:10.5]
+set title "AHU cooling 0-10vdc"
+svgfile( range ) = sprintf( "%s/ahu-valve-%s.svg", webdir, range )
+
+set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
+plot \
+  datafile(3) using 1:6 with lines lw 1 lt 3 title 'AHU 3', \
+  datafile(4) using 1:6 with lines lw 1 lt 4 title 'AHU 4', \
+  datafile(5) using 1:6 with lines lw 1 lt 5 title 'AHU 5'
+set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "365d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "50d" )
+replot;
+set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "7d" )
+replot;
+set format x "%h"        # Label format for x-axis
+set xlabel "Time"
+set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+set output svgfile( "24u" )
+replot;
+unset xrange
+
+
+#########################################################################################################
+#
+# Return humidity
+#
+#########################################################################################################
+
+set ylabel "Return humidity (%)"
+set yrange [0:100]
+set title "AHU Return humidity"
+svgfile( range ) = sprintf( "%s/ahu-return-hum-%s.svg", webdir, range )
+
+set output svgfile( "all" )
+set format x "%m/%d"        # Label format for x-axis
+set xlabel "Date"
+plot \
+  datafile(3) using 1:3 with lines lw 1 lt 3 title 'AHU 3', \
+  datafile(4) using 1:3 with lines lw 1 lt 4 title 'AHU 4', \
+  datafile(5) using 1:3 with lines lw 1 lt 5 title 'AHU 5'
 set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
 set output svgfile( "365d" )
 replot;
