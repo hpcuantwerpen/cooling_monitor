@@ -129,7 +129,8 @@ sub Log
 	  $self->{'analog'}{4}, 
 	  $self->{'analog'}{1}, 
 	  $self->{'analog'}{5}, 
-	  $self->{'analog'}{12}, 
+      $self->{'analog'}{12}, 
+      $self->{'analog'}{35}, 
 	  $self->{'digital'}{21}, 
 	  $self->{'digital'}{26}, 
 	  $self->{'digital'}{27}
