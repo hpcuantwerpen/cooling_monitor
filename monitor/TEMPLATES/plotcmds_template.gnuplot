@@ -526,6 +526,53 @@ unset object 1; unset object 2; unset object 3; unset object 4; unset object 5
 
 datafile(n) = sprintf( "%s/ahu%02d.data", datadir, n )
 
+AHUS = "3 4 5"
+
+#########################################################################################################
+#
+# Temperatures and valve position
+#
+#########################################################################################################
+
+set yrange  [13:37]
+set y2range [-1:11]
+set ylabel  "temperature (°C)"
+set y2label "vdc"
+set y2tics  0,2.5,10
+svgfile( n, range ) = sprintf( "%s/ahu%02d-%s.svg", webdir, n, range )
+title(n)            = sprintf( "AHU%02d Temperatures (degC) and Cooling 0-10vdc", n )
+
+do for [ns in AHUS] {
+  n = ns+0   # A trick to force conversion to a number.
+  set title  title( n )
+  set output svgfile( n, "all" )
+  set format x "%m/%d"        # Label format for x-axis
+  set xlabel "Date"
+  plot \
+    datafile(n) using 1:2 with lines lw 1 lt 1 axes x1y1 title 'Return Temperature (°C)', \
+    datafile(n) using 1:4 with lines lw 1 lt 3 axes x1y1 title 'Supply Temperature (°C)', \
+    datafile(n) using 1:6 with lines lw 1 lt 5 axes x1y2 title 'Cooling 0-10vdc'
+  set xrange [ ((GPVAL_DATA_X_MAX-365*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-365*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+  set output svgfile( n, "365d" )
+  replot;
+  set xrange [ ((GPVAL_DATA_X_MAX-50*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-50*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+  set output svgfile( n, "50d" )
+  replot;
+  set xrange [ ((GPVAL_DATA_X_MAX-7*24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-7*24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+  set output svgfile( n, "7d" )
+  replot;
+  set format x "%h"        # Label format for x-axis
+  set xlabel "Time"
+  set xrange [ ((GPVAL_DATA_X_MAX-24*3600 > GPVAL_DATA_X_MIN) ? GPVAL_DATA_X_MAX-24*3600 : GPVAL_DATA_X_MIN ) : GPVAL_DATA_X_MAX]
+  set output svgfile( n, "24u" )
+  replot;
+  unset xrange
+}
+
+unset y2range ; unset y2label ; unset y2tics
+
+
+
 #########################################################################################################
 #
 # Return temperature

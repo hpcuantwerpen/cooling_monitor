@@ -130,9 +130,9 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 #   4 => "graphs.html#chiller04",
   11 => "graphs.html#cooler01",
   12 => "graphs.html#cooler02",
-  23 => "graphs.html#AHU",
-  24 => "graphs.html#AHU",
-  25 => "graphs.html#AHU"
+  23 => "graphs.html#ahu03",
+  24 => "graphs.html#ahu04",
+  25 => "graphs.html#ahu05"
 );
 
 #
