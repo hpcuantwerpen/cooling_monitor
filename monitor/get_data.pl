@@ -145,7 +145,7 @@ if ( $debug == 1 ) {
 #
 
 (my $alarmMssgsRef, my $alarmListRef) = get_alarms( \%devices, $datadir );
-print "\n\nReturn of get_alarms: the list of new, active and expired alarms:\n"; print Dumper $alarmListRef;
+#print "\n\nReturn of get_alarms: the list of new, active and expired alarms:\n"; print Dumper $alarmListRef;
 
 send_mail( $alarmListRef, $mailto );
 
@@ -563,7 +563,7 @@ sub send_mail {
 
     if ( @message ) {
         my $mailcommand = join( ' ', ( '|', $mailx, '-s', "'$subject'", $mailto ) );
-        print "Sending message \":\n". join( "\n", @message ) . "\n\" using the command \"" . $mailcommand . "\"\n";  
+        #print "Sending message \":\n". join( "\n", @message ) . "\n\" using the command \"" . $mailcommand . "\"\n";  
         my $pipe = IO::File->new( $mailcommand ) or die "Could not open create a pipe for sending mail";
         $pipe->print( join( "\n", @message ) );
         $pipe->close;
@@ -713,9 +713,13 @@ sub generate_monitor_root {
       or die "Could not open the web template file $codedir/monitor_template.html";
     
     while ($line = <$webtemplate>) {
-        # Note that for simplicity we assume that the HTML contains only one
-        # %status%, %avar% or %dvar% command per line.
-        if ( $line =~ /(.*)\%avar\((\d+),(\d+)\)\%(.*)/ ) {
+        # We allow for multiple commands on a single line. This increases the overhead 
+        # here but offers more flexibility for the template file we start from.
+        # We do assume though that there is only a single %timestamp% or
+        # %AlarmMssgs%
+
+        while ( $line =~ /(.*)\%avar\((\d+),(\d+)\)\%(.*)/s ) {
+            # Split of the %avar(...,...)% that will be processed now.
             $pre    = $1;
             # $devnum = $2;   # Commented out to reduce data copying as the values remain valid until they are used anyway.
             # $varnum = $3;
@@ -728,9 +732,11 @@ sub generate_monitor_root {
                 $pre =~ s/\"data\"/\"data dataRemark\"/g;
                 $body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
             }
-            push @outputpage, $pre.$body.$post."\n";
-        }
-        elsif ( $line =~ /(.*)\%ivar\((\d+),(\d+)\)\%(.*)/ ) {
+            # Rebuild $line, but replace the %avar% command.
+            $line = $pre.$body.$post;        	
+        } # End processing %avar%
+
+        while ( $line =~ /(.*)\%ivar\((\d+),(\d+)\)\%(.*)/s ) {
             $pre    = $1;
             # $devnum = $2;
             # $varnum = $3;
@@ -743,9 +749,10 @@ sub generate_monitor_root {
                 $pre =~ s/\"data\"/\"data dataRemark\"/g;
                 $body = join( '', $body, '<div class="dataRemark"><span class="dataRemark">', $remark, '</span></div>' );
             }
-            push @outputpage, $pre.$body.$post."\n";
-        }
-        elsif ( $line =~ /(.*)\%dvar\((\d+),(\d+)\)\%(.*)/ ) {
+            $line = $pre.$body.$post;
+        } # End while loop processing %ivar%
+        
+        while ( $line =~ /(.*)\%dvar\((\d+),(\d+)\)\%(.*)/s ) {
             $pre    = $1;
             # $devnum = $2;
             # $varnum = $3;
@@ -757,9 +764,10 @@ sub generate_monitor_root {
                 $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>';
             }
             #$line =~ s/(.*)\%dvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
-            push @outputpage, $pre.$body.$post."\n";
-        }
-        elsif ( $line =~ /(.*)\%cvar\((\d+),(\d+)\)\%(.*)/ ) {
+            $line = $pre.$body.$post;
+        } # End while loop processing the dvar commands.
+        
+        while ( $line =~ /(.*)\%cvar\((\d+),(\d+)\)\%(.*)/s ) {
             $pre    = $1;
             # $devnum = $2;
             # $varnum = $3;
@@ -773,23 +781,28 @@ sub generate_monitor_root {
                 $body = $body.'<div class="dataRemark"><span class="dataRemark">'.$remark.'</span></div>';
             }
             #$line =~ s/(.*)\%cvar\(\d+,\d+\)\%(.*)/$1$replace$2/;
-            push @outputpage, $pre.$body.$post."\n";
-        }
-        elsif ( $line =~ /^( *)(.*)\%status\((\d+)\)\%(.*)/ ) {
+            $line = $pre.$body.$post;
+        } # End while-lopp processing the %cvar% commands
+        
+        while ( $line =~ /^( *)(.*)\%status\((\d+)\)\%(.*)/s ) {
             # We assume 4 possible values for status: Normal, Non-Critical, Critical and Off.
-            $spaces    = $1;
-            $startline = $2;
-            $devnum    = $3;
-            $endline   = $4;
-            $status = "<span class=\"statusItem\" id=\"D$3\_SV\"></span>";
-            $replace = "$spaces  <button class=\"StatusButtonNormal\" onclick=\"parent.location='$devices->{$devnum}->{'label'}-details.html'\">$status<\/button><br/>\n".
-                       "$spaces  <img src=\"48px-line_chart_icon.png\"  onclick=\"parent.location='$links->{$devnum}'\">&nbsp;&nbsp;\n" . 
-                       "$spaces  <img src=\"48px-table_icon.png\"       onclick=\"parent.location='$devices->{$devnum}->{'label'}-details.html'\">\n";
-            $line = $spaces.$startline."\n".$replace.$spaces.$endline."\n";
-            push @outputpage, $line;
-        } elsif ( $line =~ /(.*)\%timestamp\%(.*)/ ) {
-            push @outputpage, $1.'<span class="dataItem" id="time2L"></span>'.$2."\n";
-        } elsif ( $line =~ /.*\%AlarmMssgs\%.*/ ) {
+            $spaces = $1;
+            $pre    = $2;
+            $devnum = $3;
+            $post   = $4;
+            $status = "<span class=\"statusItem\" id=\"D$devnum\_SV\"></span>";
+            $replace = "$spaces  <button class=\"StatusButtonNormal\"  onclick=\"parent.location='$devices->{$devnum}->{'label'}-details.html'\">$status<\/button><br/>\n".
+                       "$spaces  <img src=\"48px-line_chart_icon.png\" onclick=\"parent.location='$links->{$devnum}'\">&nbsp;&nbsp;\n" . 
+                       "$spaces  <img src=\"48px-table_icon.png\"      onclick=\"parent.location='$devices->{$devnum}->{'label'}-details.html'\">\n";
+            print "Processing %status%-command\n";
+            print "Initial line:\n".$line."\n";
+            $line = $spaces.$pre."\n".$replace.$spaces.$post;
+            print "New line:\n".$line."\n";
+        } # End while-loop processing the %status% command 
+        
+        if ( $line =~ /(.*)\%timestamp\%(.*)/s ) {
+            push @outputpage, $1.'<span class="dataItem" id="time2L"></span>'.$2;
+        } elsif ( $line =~ /.*\%AlarmMssgs\%.*/s ) {
             # We do assume that there is only a %AlarmMssgs% on that line in the HTML file, but we will
             # prepend each line of the output with the correct number of spaces that was also used in the
             # template.
