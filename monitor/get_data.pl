@@ -23,6 +23,7 @@ use POSIX qw(strftime);
 use Time::Local;  # For the timelocal function.
 use Storable;
 
+use DEVICE::chillerGalletti16;
 use DEVICE::coolerAD;
 use DEVICE::ahuAD;
 
@@ -94,6 +95,11 @@ if ( ! -d $webdir ) {
 # Collect the data
 #
 
+# Routine to fetch data from the Galletti chillers
+$chiller01data = DEVICE::chillerGalletti16->New( "10.28.233.52", "chiller01" );
+$chiller02data = DEVICE::chillerGalletti16->New( "10.28.233.53", "chiller02" );
+$chiller03data = DEVICE::chillerGalletti16->New( "10.28.233.54", "chiller03" );
+
 # Routine to fetch the data from the coolers of hopper and turing
 $cooler01data = DEVICE::coolerAD->New( "10.28.233.50", "cooler01" );
 $cooler02data = DEVICE::coolerAD->New( "10.28.233.51", "cooler02" );
@@ -113,6 +119,9 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 # Generate the device list hash
 #
 %devices = (
+   1 => $chiller01data,
+   2 => $chiller02data,
+   3 => $chiller03data,
   11 => $cooler01data,
   12 => $cooler02data,
   23 => $ahu03data,
@@ -121,6 +130,9 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 );
 
 %links = (
+   1 => "graphs.html#chiller01",
+   2 => "graphs.html#chiller02",
+   3 => "graphs.html#chiller03",
   11 => "graphs.html#cooler01",
   12 => "graphs.html#cooler02",
   23 => "graphs.html#ahu03",
@@ -133,7 +145,10 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 #
 my $debug = 0;
 if ( $debug == 1 ) {
-	print "Setting some alarms for debug purposes.\n";
+#    $chiller01data->{'digital'}{24}  = 1;
+    $chiller02data->{'digital'}{24}  = 1;
+    $chiller03data->{'digital'}{102} = 1; # Non-critical alarm
+    $chiller03data->{'digital'}{120} = 1; # Non-critical alarm
     $cooler01data->{'digital'}{59}   = 1; # High supply temp critical alarm
 #    $cooler02data->{'digital'}{59}   = 1; # High supply temp critical alarm
     $ahu03data->{'digital'}{26}      = 1; # Non-critical alarm
@@ -162,6 +177,9 @@ generate_rawdata( \%devices, $webdir, $alarmMssgsRef );
 # Don't log if we don't have valid data for now (this avoids problems when
 # making the plots)
 #
+$chiller01data->{'valid'} and $chiller01data->Log( "$datadir/chiller01.data" );
+$chiller02data->{'valid'} and $chiller02data->Log( "$datadir/chiller02.data" );
+$chiller03data->{'valid'} and $chiller03data->Log( "$datadir/chiller03.data" );
 $cooler01data->{'valid'}  and $cooler01data->Log( "$datadir/cooler01.data" );
 $cooler02data->{'valid'}  and $cooler02data->Log( "$datadir/cooler02.data" );
 # $ahu01data->{'valid'}     and $ahu01data->Log( "$datadir/ahu01.data" );
@@ -196,6 +214,9 @@ close( $gnuplotPipe );
 # Create full log files in case we ever need more data.
 # These files are created per month.
 #
+$chiller01data->{'valid'} and $chiller01data->FullLog( $datadir );
+$chiller02data->{'valid'} and $chiller02data->FullLog( $datadir );
+$chiller03data->{'valid'} and $chiller03data->FullLog( $datadir );
 $cooler01data->{'valid'}  and $cooler01data->FullLog( $datadir );
 $cooler01data->{'valid'}  and $cooler02data->FullLog( $datadir );
 # $ahu01data->{'valid'}     and $ahu01data->FullLog( $datadir );
