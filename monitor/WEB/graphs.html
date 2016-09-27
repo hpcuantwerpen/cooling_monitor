@@ -71,19 +71,13 @@
 </head>
 <body style="background: white; font-family: verdana;">
 
-<ul>
-<!-- 
-<li><a href="#chiller01">Chiller 01 monitoring</a></li>
-<li><a href="#chiller02">Chiller 02 monitoring</a></li>
-<li><a href="#chiller04">Chiller 03 monitoring</a></li>
-<li><a href="#all-chillers">Chillers compared</a></li>
--->
+<ul><!-- Table of Contents at the top of the page -->
 <li><a href="#coolers">Coolers</a> (<a href="#cooler01">cooler01</a>, <a href="#cooler02">cooler02</a>)</li>
-<li><a href="#coolerSupply">Coolers compared</a></li>
+<li><a href="#coolerCompared">Coolers compared</a></li>
 <li><a href="#ahu">Air Handling Units</a> (<a href="#ahu03">AHU03</a>, <a href="#ahu04">AHU04</a>, <a href="#ahu05">AHU05</a>)</li>
-<li><a href="#ahuSupply">Air Handling Units compared</a></li>
+<li><a href="#ahuCompared">Air Handling Units compared</a></li>
 <li><a href="#browser-bugs">Browser bugs</a></li>
-</ul>
+</ul><!-- End Table of Contents -->
 
 <!-- StartDevelopment 
 <h1>Development graph</h1>
@@ -102,36 +96,12 @@
 </div>
       EndDevelopment -->
 
-<!-- Temporary not needed
-<h1><a name="chiller01"></a>Chiller 01 monitoring</h1>
-
-<script>generateGraph("chiller01-temperatures")</script>
-<script>generateGraph("chiller01-pressures")</script>
-<script>generateGraph("chiller01-pressure-raise")</script>
-
-<h1><a name="chiller02"></a>Chiller 02 monitoring</h1>
-
-<script>generateGraph("chiller02-temperatures")</script>
-<script>generateGraph("chiller02-pressures")</script>
-<script>generateGraph("chiller02-pressure-raise")</script>
-
-<h1><a name="chiller03"></a>Chiller 03 monitoring</h1>
-
-<script>generateGraph("chiller04-temperatures")</script>
-<script>generateGraph("chiller04-pressures")</script>
-<script>generateGraph("chiller04-pressure-raise")</script>
-<script>generateGraph("chiller04-suction-temp")</script>
-<script>generateGraph("chiller04-superheat")</script>
-
-<h1><a name="all-chillers"></a>Chillers compared</h1>
-
-<script>generateGraph("chillers-supply-temp")</script>
--->
-
 <h1><a name="coolers"></a>Coolers</h1>
 
 <a name="cooler01"></a><script>generateGraph("cooler01")</script>
 <a name="cooler02"></a><script>generateGraph("cooler02")</script>
+
+<h2><a name="coolerCompared">Coolers compared</h2>
 <a name="coolerSupply"></a><script>generateGraph("coolers-supply-temp")</script>
 <a name="coolerReturn"></a><script>generateGraph("coolers-return-temp")</script>
 <a name="coolerInlet"></a><script>generateGraph("coolers-inlet-temp")</script>
@@ -141,6 +111,8 @@
 <a name="ahu03"></a><script>generateGraph("ahu03")</script>
 <a name="ahu04"></a><script>generateGraph("ahu04")</script>
 <a name="ahu05"></a><script>generateGraph("ahu05")</script>
+
+<h2><a name="ahuCompared">AHUs compared</h2>
 <a name="ahuSupply"></a><script>generateGraph("ahu-supply-temp")</script>
 <a name="ahuReturn"></a><script>generateGraph("ahu-return-temp")</script>
 <a name="ahuValve"></a><script>generateGraph("ahu-valve")</script>
