@@ -23,8 +23,6 @@ use POSIX qw(strftime);
 use Time::Local;  # For the timelocal function.
 use Storable;
 
-# use DEVICE::chillerAD04;
-# use DEVICE::chillerAD14;
 use DEVICE::coolerAD;
 use DEVICE::ahuAD;
 
@@ -96,13 +94,6 @@ if ( ! -d $webdir ) {
 # Collect the data
 #
 
-# Routine to fetch data from chiller01/chiller02
-# $chiller01data = DEVICE::chillerAD04->New( "10.28.243.234", 6, "chiller01" );
-# $chiller02data = DEVICE::chillerAD04->New( "10.28.243.234", 7, "chiller02" );
-
-# Routine to fetch data from Chiller04
-# $chiller04data = DEVICE::chillerAD14->New( "10.28.233.52", "chiller04" );
-
 # Routine to fetch the data from the coolers of hopper and turing
 $cooler01data = DEVICE::coolerAD->New( "10.28.233.50", "cooler01" );
 $cooler02data = DEVICE::coolerAD->New( "10.28.233.51", "cooler02" );
@@ -122,9 +113,6 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 # Generate the device list hash
 #
 %devices = (
-#   1 => $chiller01data,
-#   2 => $chiller02data,
-#   4 => $chiller04data,
   11 => $cooler01data,
   12 => $cooler02data,
   23 => $ahu03data,
@@ -133,9 +121,6 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 );
 
 %links = (
-#   1 => "graphs.html#chiller01",
-#   2 => "graphs.html#chiller02",
-#   4 => "graphs.html#chiller04",
   11 => "graphs.html#cooler01",
   12 => "graphs.html#cooler02",
   23 => "graphs.html#ahu03",
@@ -148,6 +133,7 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 #
 my $debug = 0;
 if ( $debug == 1 ) {
+	print "Setting some alarms for debug purposes.\n";
     $cooler01data->{'digital'}{59}   = 1; # High supply temp critical alarm
 #    $cooler02data->{'digital'}{59}   = 1; # High supply temp critical alarm
     $ahu03data->{'digital'}{26}      = 1; # Non-critical alarm
@@ -159,7 +145,7 @@ if ( $debug == 1 ) {
 #
 
 (my $alarmMssgsRef, my $alarmListRef) = get_alarms( \%devices, $datadir );
-#print "\n\nReturn of get_alarms: the list of new, active and expired alarms:\n"; print Dumper $alarmListRef;
+print "\n\nReturn of get_alarms: the list of new, active and expired alarms:\n"; print Dumper $alarmListRef;
 
 send_mail( $alarmListRef, $mailto );
 
@@ -577,7 +563,7 @@ sub send_mail {
 
     if ( @message ) {
         my $mailcommand = join( ' ', ( '|', $mailx, '-s', "'$subject'", $mailto ) );
-        #print "Sending message \":\n". join( "\n", @message ) . "\n\" using the command \"" . $mailcommand . "\"\n";  
+        print "Sending message \":\n". join( "\n", @message ) . "\n\" using the command \"" . $mailcommand . "\"\n";  
         my $pipe = IO::File->new( $mailcommand ) or die "Could not open create a pipe for sending mail";
         $pipe->print( join( "\n", @message ) );
         $pipe->close;
