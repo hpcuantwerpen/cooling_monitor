@@ -42,6 +42,11 @@ ssh-add ~/.ssh/id_rsa_cluster_UAntwerpen
 scp -i ~/.ssh/id_rsa_cluster_UAntwerpen vsc20001@10.28.236.8:/opt/icinga/cooling/data/cooler01.data data
 ./get_testdata.sh 1601
 
+It is easier when testing on the active masterin the vsc20001-account. 
+It is then sufficient to copy recent *.log and *.data files 
+from /opt/icinga/cooling/data to
+/data/antwerpen/200/vsc20001/test-cooling-monitor/data.
+
 Setting up a web server on the login nodes and proxy on the laptop
 ------------------------------------------------------------------
 
@@ -61,7 +66,7 @@ Setting up a web server on the login nodes and proxy on the laptop
 * Start a python SimpleHTTPServer web server on port 8888 (the port chosen with 
   ssh above) via the script start_webserver (the 8888 is hard-coded in that script!)
 
-cd ${VSC_DATA}/Monitor/V2/www
+cd ${VSC_DATA}/Projects/Monitor/VPerl/www
 ./start_webserver
 
   The script is needed since otherwise SipleHTTPServer doesn't serve the
@@ -74,7 +79,12 @@ the web interfaces of the iLO's etc. on the cluster and then use the
 URL 10.28.236.13:8888 assuming the SimpleHTTPServer runs on login4 of
 Hopper, port 8888.
 
-
+Similarly, when testing from the vsc20001-account, login to the active
+master creating a ssh-tunnel (-L 888:localhost:8888), and execute
+cd ${VSC_DATA}/test-cooling-monitor/www
+./start_webserver
+to start a test web server. Then point your browser on your local machine
+to localhost:8888.
 
 Running the code
 ----------------
@@ -88,13 +98,16 @@ module load hopper/2015a
 module load Perl/5.20.1-intel-2015a
 module load gnuplot/5.0.0-intel-2015a
   
-* Then all you need to do is to go to ${VSC_DATA}/Monitor/V2/monitor
+* Then all you need to do is to go to ${VSC_DATA}/Projects/Monitor/VPerl/monitor
   and run getdata.pl
   
-cd ${VSC_DATA}/Monitor/V2/monitor
-./getdata.pl
+cd ${VSC_DATA}/Projects/Monitor/VPerl/monitor
+./get_data.pl
 
-
+The same steps are needed when testing on the active master under the 
+vsc20001-account, but then
+cd ${VSC_DATA}/test-cooling-monitor/monitor
+./get_data.pl
 
 
 

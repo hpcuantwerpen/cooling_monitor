@@ -794,10 +794,7 @@ sub generate_monitor_root {
             $replace = "$spaces  <button class=\"StatusButtonNormal\"  onclick=\"parent.location='$devices->{$devnum}->{'label'}-details.html'\">$status<\/button><br/>\n".
                        "$spaces  <img src=\"48px-line_chart_icon.png\" onclick=\"parent.location='$links->{$devnum}'\">&nbsp;&nbsp;\n" . 
                        "$spaces  <img src=\"48px-table_icon.png\"      onclick=\"parent.location='$devices->{$devnum}->{'label'}-details.html'\">\n";
-            print "Processing %status%-command\n";
-            print "Initial line:\n".$line."\n";
             $line = $spaces.$pre."\n".$replace.$spaces.$post;
-            print "New line:\n".$line."\n";
         } # End while-loop processing the %status% command 
         
         if ( $line =~ /(.*)\%timestamp\%(.*)/s ) {

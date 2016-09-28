@@ -1,4 +1,7 @@
 #! /usr/bin/env python
+#
+# When not running on the local host: Use SSH with port forwarding to the port reported when
+# you start this script (8888 unless the script has been modified): -L 8888:localhost:8888.
 
 import SimpleHTTPServer
 import SocketServer
