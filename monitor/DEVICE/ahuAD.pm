@@ -19,8 +19,8 @@ $description = {
     } ,
   'analog' => {
       1 => { info => 'air return humidity ',    unit => '%RH', remark => '' },
-      4 => { info => 'air return temperature ', unit => 'ºC',  remark => '' },
-      5 => { info => 'air supply temperature ', unit => 'ºC',  remark => '' },
+      4 => { info => 'air return temperature ', unit => 'ºC',  remark => 'Room, controlled by set point' },
+      5 => { info => 'air supply temperature ', unit => 'ºC',  remark => '"Cold aisle"' },
      12 => { info => 'Temperature set point ',  unit => 'ºC',  remark => '' },
      35 => { info => 'cooling 0-10vdc ',        unit => '',    remark => 'Proportional to water valve, 10=100%?' }
     },

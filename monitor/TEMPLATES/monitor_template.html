@@ -151,33 +151,39 @@ function refreshFields( ) {
   <tr><!-- ENV 1: Supply water T -->
     <td class="label">Supply water T</td>
     <td class="data">%avar(11,33)%</td><td class="data">%avar(12,33)%</td>
-    <td class="label"></td>
+    <td class="label">Supply water T</td>
     <td class="data">/</td><td class="data">/</td><td class="data">/</td>
   </tr><!-- End ENV 1: Supply water T -->
-  <tr><!-- ENV 4: Supply air T -->
-    <td class="label">Supply air T</td>
-    <td class="data">%avar(11,36)%</td><td class="data">%avar(12,36)%</td>
+  <tr><!-- ENV 2: Supply air T AHU -->
     <td class="label"></td>
+    <td class="data"></td><td class="data"></td>
+    <td class="label">Supply air T</td>
     <td class="data">%avar(23,5)%</td><td class="data">%avar(24,5)%</td><td class="data">%avar(25,5)%</td>
-  </tr><!-- End ENV 4: Supply air T -->
-  <tr><!-- ENV 5: Return air T -->
+  </tr><!-- End ENV 2: Supply air T AHU -->
+  <tr><!-- ENV 3: Managed room T: Supply air InRak / Return Air AHU -->
+    <td class="label">Supply air T (contr.)</td>
+    <td class="data">%avar(11,36)%</td><td class="data">%avar(12,36)%</td>
+    <td class="label">Return air T (contr.)</td>
+    <td class="data">%avar(23,4)%</td><td class="data">%avar(24,4)%</td><td class="data">%avar(25,4)%</td>
+  </tr><!-- End ENV 3: Managed room T: Supply air InRak / Return Air AHU -->
+  <tr><!-- ENV 4: Return air T -->
     <td class="label">Return air T</td>
     <td class="data">%avar(11,35)%</td><td class="data">%avar(12,35)%</td>
     <td class="label"></td>
-    <td class="data">%avar(23,4)%</td><td class="data">%avar(24,4)%</td><td class="data">%avar(25,4)%</td>
-  </tr><!-- End ENV 5: Return air T -->
-  <tr><!-- ENV 6: Set point -->
+    <td class="data"></td><td class="data"></td><td class="data"></td>
+  </tr><!-- End ENV 4: Return air T -->
+  <tr><!-- ENV 5: Set point -->
     <td class="label">Set point</td>
     <td class="data">%avar(11,48)%</td><td class="data">%avar(12,48)%</td>
-    <td class="label"></td>
+    <td class="label">Set point</td>
     <td class="data">%avar(23,12)%</td><td class="data">%avar(24,12)%</td><td class="data">%avar(25,12)%</td>
-  </tr><!-- End ENV 6: Set point -->
-  <tr><!-- ENV 7: Relative humidity -->
+  </tr><!-- End ENV 5: Set point -->
+  <tr><!-- ENV 6: Relative humidity -->
     <td class="label">Relative humidity</td>
     <td class="data">%avar(11,34)%</td><td class="data">%avar(12,34)%</td>
-    <td class="label"></td>
+    <td class="label">Relative humidity</td>
     <td class="data">%avar(23,1)%</td><td class="data">%avar(24,1)%</td><td class="data">%avar(25,1)%</td>
-  </tr><!-- End ENV 7: Relative humidity -->
+  </tr><!-- End ENV 6: Relative humidity -->
   <tr>
     <td colspan="11" class="title"><strong>Specific parameters</strong></td>
   </tr>
