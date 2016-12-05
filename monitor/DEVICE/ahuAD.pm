@@ -29,7 +29,6 @@ $description = {
       1 => { info => 'return air humidity (when measurable)',    type => 'D', unit => '%RH', remark => '' },
       2 => { info => 'return air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => 'Room, controlled by set point' },
       3 => { info => 'supply air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => '"Cold aisle"' },
-      4 => { info => 'cooling 0-10vdc (when relevant)',          type => 'D', unit => 'ºC',  remark => '' }	
     }
   };
 
@@ -120,16 +119,16 @@ sub New
     $self->{'timestamp'} = strftime( "%Y%m%dT%H%MZ", gmtime );
 
     # Compute the computed variables
+    # The idea is to not show a value if it can't be measured well because the fan
+    # is not spinning.
     if ( $self->{'digital'}{21} ) {
         $self->{'computed'}{1} = $self->{'analog'}{1};
         $self->{'computed'}{2} = $self->{'analog'}{4};
         $self->{'computed'}{3} = $self->{'analog'}{5};
-        $self->{'computed'}{4} = $self->{'analog'}{35};
     } else {
         $self->{'computed'}{1} = '/';
         $self->{'computed'}{2} = '/';
         $self->{'computed'}{3} = '/';
-        $self->{'computed'}{4} = '/';
     }
 
     # Finalise the object creation
