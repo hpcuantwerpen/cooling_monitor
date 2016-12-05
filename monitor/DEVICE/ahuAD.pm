@@ -18,14 +18,19 @@ $description = {
     114 => { info => 'AHU enabled ',        type => 'NoAlarm',       value => ['Disabled', 'Enabled'], remark => '' }
     } ,
   'analog' => {
-      1 => { info => 'air return humidity ',    unit => '%RH', remark => '' },
-      4 => { info => 'air return temperature ', unit => 'ºC',  remark => 'Room, controlled by set point' },
-      5 => { info => 'air supply temperature ', unit => 'ºC',  remark => '"Cold aisle"' },
+      1 => { info => 'return air humidity ',    unit => '%RH', remark => '' },
+      4 => { info => 'return air temperature ', unit => 'ºC',  remark => 'Room, controlled by set point' },
+      5 => { info => 'supply air temperature ', unit => 'ºC',  remark => '"Cold aisle"' },
      12 => { info => 'Temperature set point ',  unit => 'ºC',  remark => '' },
      35 => { info => 'cooling 0-10vdc ',        unit => '',    remark => 'Proportional to water valve, 10=100%?' }
     },
     'integer' => { },
-    'computed' => { }
+    'computed' => { 
+      1 => { info => 'return air humidity (when measurable)',    type => 'D', unit => '%RH', remark => '' },
+      2 => { info => 'return air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => 'Room, controlled by set point' },
+      3 => { info => 'supply air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => '"Cold aisle"' },
+      4 => { info => 'cooling 0-10vdc (when relevant)',          type => 'D', unit => 'ºC',  remark => '' }	
+    }
   };
 
 $OIDdigital = "1.";
@@ -113,6 +118,19 @@ sub New
 
     # Add the timestamp field
     $self->{'timestamp'} = strftime( "%Y%m%dT%H%MZ", gmtime );
+
+    # Compute the computed variables
+    if ( $self->{'digital'}{21} ) {
+        $self->{'computed'}{1} = $self->{'analog'}{1};
+        $self->{'computed'}{2} = $self->{'analog'}{4};
+        $self->{'computed'}{3} = $self->{'analog'}{5};
+        $self->{'computed'}{4} = $self->{'analog'}{35};
+    } else {
+        $self->{'computed'}{1} = '/';
+        $self->{'computed'}{2} = '/';
+        $self->{'computed'}{3} = '/';
+        $self->{'computed'}{4} = '/';
+    }
 
     # Finalise the object creation
     bless( $self, $class );
