@@ -1,6 +1,7 @@
 package DEVICE::ahuAD;
 
 use parent 'DEVICE::generic';
+use DEVICE::deviceHelpers qw(RangeCheck);
 
 use IO::File;
 use Net::SNMP;
@@ -9,7 +10,7 @@ use Try::Tiny;
 
 #use Data::Dumper qw(Dumper);
 
-
+# Note range field analog variables: CriticalAlarm Range[0] SoftAlarm Range[1] OK Range[2] Softalarm Range[3] CriticalAlarm
 $description = {
   'digital' => { 
      21 => { info => 'fan operating ',      type => 'NoAlarm',       value => ['No', 'Yes'],           remark => '' },
@@ -18,14 +19,14 @@ $description = {
     114 => { info => 'AHU enabled ',        type => 'NoAlarm',       value => ['Disabled', 'Enabled'], remark => '' }
     } ,
   'analog' => {
-      1 => { info => 'return air humidity ',    unit => '%RH', remark => '' },
-      4 => { info => 'return air temperature ', unit => 'ºC',  remark => 'Room, controlled by set point' },
-      5 => { info => 'supply air temperature ', unit => 'ºC',  remark => '"Cold aisle"' },
-     12 => { info => 'Temperature set point ',  unit => 'ºC',  remark => '' },
-     35 => { info => 'cooling 0-10vdc ',        unit => '',    remark => 'Proportional to water valve, 10=100%?' }
+      1 => { info => 'return air humidity ',    unit => '%RH',                              remark => '' },
+      4 => { info => 'return air temperature ', unit => 'ºC',  range => [ 10, 20, 27, 29 ], remark => 'Room, controlled by set point' },
+      5 => { info => 'supply air temperature ', unit => 'ºC',  range => [  5, 10, 23, 25 ], remark => '"Cold aisle"' },
+     12 => { info => 'Temperature set point ',  unit => 'ºC',                               remark => '' },
+     35 => { info => 'cooling 0-10vdc ',        unit => '',                                 remark => 'Proportional to water valve, 10=100%?' }
     },
-    'integer' => { },
-    'computed' => { 
+  'integer' => { },
+  'computed' => { 
       1 => { info => 'return air humidity (when measurable)',    type => 'D', unit => '%RH', remark => '' },
       2 => { info => 'return air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => 'Room, controlled by set point' },
       3 => { info => 'supply air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => '"Cold aisle"' },
@@ -87,24 +88,27 @@ sub New
     	    my $oid = $OIDbase.$webgate_device.".".$OIDdigital.$mykey.".0";
     	    my $result = $session->get_request( $oid )
                 or die "SNMP service $oid is not available on the SNMP server $webgateIP:$webgate_device.\n";
-            $self->{'digital'}{$mykey} = $result->{$oid};       
-        	# print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
+            $self->{'digital'}{$mykey}{'value'} = $result->{$oid};       
+        	# print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}{'value'}, "\n" );
         }
     
         foreach my $mykey ( sort keys %{ $description->{'analog'} } ) { 
         	my $oid = $OIDbase.$webgate_device.".".$OIDanalog.$mykey.".0";
     	    my $result = $session->get_request( $oid )
                 or die "SNMP service $oid is not available on the SNMP server $webgateIP:$webgate_device.\n";
-            $self->{'analog'}{$mykey} = $result->{$oid} / 10.;       
-        	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
+            $self->{'analog'}{$mykey}{'value'} = $result->{$oid} / 10.; 
+            if ( exists( $description->{'analog'}{$mykey}{'range'} ) ) { 
+            	$self->{'analog'}{$mykey}{'status'} = DEVICE::deviceHelpers::RangeCheck( $self->{'analog'}{$mykey}{'value'}, $description->{'analog'}{$mykey}{'range'} ); 
+            }     
+        	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}{'value'}, "\n" );
         }
         
         foreach my $mykey ( sort keys %{ $description->{'integer'} } ) { 
         	my $oid = $OIDbase.$webgate_device.".".$OIDinteger.$mykey.".0";
     	    my $result = $session->get_request( $oid )
     	        or die "SNMP service $oid is not available on the SNMP server $webgateIP:$webgate_device.\n";
-            $self->{'integer'}{$mykey} = $result->{$oid};       
-        	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}, "\n" );
+            $self->{'integer'}{$mykey}{'value'} = $result->{$oid};       
+        	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}{'value'}, "\n" );
         }
         
         # Close the connection
@@ -121,19 +125,21 @@ sub New
     # Compute the computed variables
     # The idea is to not show a value if it can't be measured well because the fan
     # is not spinning.
-    if ( $self->{'digital'}{21} ) {
-        $self->{'computed'}{1} = $self->{'analog'}{1};
-        $self->{'computed'}{2} = $self->{'analog'}{4};
-        $self->{'computed'}{3} = $self->{'analog'}{5};
+    if ( $self->{'digital'}{21}{'value'} ) {
+        $self->{'computed'}{1}{'value'}  = $self->{'analog'}{1}{'value'};
+        $self->{'computed'}{2}{'value'}  = $self->{'analog'}{4}{'value'};
+        $self->{'computed'}{2}{'status'} = DEVICE::deviceHelpers::RangeCheck( $self->{'computed'}{2}{'value'}, $description->{'analog'}{4}{'range'} );;
+        $self->{'computed'}{3}{'value'}  = $self->{'analog'}{5}{'value'};
+        $self->{'computed'}{3}{'status'} = DEVICE::deviceHelpers::RangeCheck( $self->{'computed'}{3}{'value'}, $description->{'analog'}{5}{'range'} );;
     } else {
-        $self->{'computed'}{1} = '/';
-        $self->{'computed'}{2} = '/';
-        $self->{'computed'}{3} = '/';
+        $self->{'computed'}{1}{'value'} = '/';
+        $self->{'computed'}{2}{'value'} = '/';
+        $self->{'computed'}{3}{'value'} = '/';
     }
 
     # Finalise the object creation
     bless( $self, $class );
-    return $self
+    return $self;
 	
 }
 
@@ -152,14 +158,14 @@ sub Log
 	
 	my @logdata = (
 	  $self->{'timestamp'},
-	  $self->{'analog'}{4}, 
-	  $self->{'analog'}{1}, 
-	  $self->{'analog'}{5}, 
-      $self->{'analog'}{12}, 
-      $self->{'analog'}{35}, 
-	  $self->{'digital'}{21}, 
-	  $self->{'digital'}{26}, 
-	  $self->{'digital'}{27}
+	  $self->{'analog'}{4}{'value'}, 
+	  $self->{'analog'}{1}{'value'}, 
+	  $self->{'analog'}{5}{'value'}, 
+      $self->{'analog'}{12}{'value'}, 
+      $self->{'analog'}{35}{'value'}, 
+	  $self->{'digital'}{21}{'value'}, 
+	  $self->{'digital'}{26}{'value'}, 
+	  $self->{'digital'}{27}{'value'}
 	  );
 
     # print( "To $filename: ", join(",", @logdata), "\n" ) ;
@@ -177,10 +183,10 @@ sub Status
 	
 	my $status = "";
 	
-	if    ( ! $self->{'valid'} )             { $status = "Offline"; }
-    elsif ( $self->{'digital'}->{27} != 0  ) { $status = "Critical"; }
-	elsif ( $self->{'digital'}->{26} != 0  ) { $status = "Non-Critical"; }
-	else                                     { $status = "Normal" };
+	if    ( ! $self->{'valid'} )                      { $status = "Offline"; }
+    elsif ( $self->{'digital'}->{27}{'value'} != 0  ) { $status = "Critical"; }
+	elsif ( $self->{'digital'}->{26}{'value'} != 0  ) { $status = "Non-Critical"; }
+	else                                              { $status = "Normal" };
 	
 	return $status;
 	

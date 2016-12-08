@@ -24,7 +24,6 @@ sub New
 
     my $proto = shift;
     my $class = ref($proto) || $proto;
-
 	
     my $self = {
       'description' => $description,
@@ -82,13 +81,13 @@ sub FullLog {
 	# Now prepare the data record.
 	my @dataline = ( $self->{'timestamp'} );
 	foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'digital'} } ) { 
-        push @dataline, $self->{'digital'}{$mykey};
+        push @dataline, $self->{'digital'}{$mykey}{'value'};
     }
 	foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'analog'} } ) { 
-        push @dataline, $self->{'analog'}{$mykey};
+        push @dataline, $self->{'analog'}{$mykey}{'value'};
     }
 	foreach my $mykey ( sort {$a<=>$b} keys %{ $self->{'description'}{'integer'} } ) { 
-        push @dataline, $self->{'integer'}{$mykey};
+        push @dataline, $self->{'integer'}{$mykey}{'value'};
     }
 
     my $fh = IO::File->new( $logfilename, '>>' ) or die "Could not open file '$logfilename'";
@@ -105,9 +104,14 @@ sub DVar
 	my $self = $_[0];
 	my $var  = $_[1];
 	
-	my $value = $self->{'digital'}{$var};
+	my $value  = $self->{'digital'}{$var}{'value'};
+	my $status = 'Normal';
+	if ( $self->{'description'}{'digital'}{$var}{'remark'} ne 'NoAlarm' ) {
+		$status = $value ? $self->{'description'}{'digital'}{$var}{'type'} : 'Normal';
+	}
 	
 	return ( $value, 
+             $status,
 	         $self->{'description'}{'digital'}{$var}{'value'}[$value], 
 	         $self->{'description'}{'digital'}{$var}{'remark'} );
 	
@@ -119,8 +123,13 @@ sub AVar
 	
 	my $self = $_[0];
 	my $var  = $_[1];
+
+    my $status;
+    if ( exists( $self->{'analog'}{$var}{'status'} ) ) { $status = $self->{'analog'}{$var}{'status'}; }
+    else                                               { $status = 'Normal'; }
 	
-	return ( $self->{'analog'}{$var}, 
+	return ( $self->{'analog'}{$var}{'value'}, 
+             $status,
 	         $self->{'description'}{'analog'}{$var}{'unit'}, 
 	         $self->{'description'}{'analog'}{$var}{'remark'} );
 	
@@ -133,7 +142,12 @@ sub IVar
     my $self = $_[0];
     my $var  = $_[1];
     
-    return ( $self->{'integer'}{$var}, 
+    my $status;
+    if ( exists( $self->{'integer'}{$var}{'status'} ) ) { $status = $self->{'integer'}{$var}{'status'}; }
+    else                                                { $status = 'Normal'; }
+
+    return ( $self->{'integer'}{$var}{'value'}, 
+             $status,
              $self->{'description'}{'integer'}{$var}{'unit'}, 
              $self->{'description'}{'integer'}{$var}{'remark'} );
     
@@ -146,7 +160,12 @@ sub CVar
     my $self = $_[0];
     my $var  = $_[1];
     
-    return ( $self->{'computed'}{$var}, 
+    my $status;
+    if ( exists( $self->{'computed'}{$var}{'status'} ) ) { $status = $self->{'computed'}{$var}{'status'}; }
+    else                                                 { $status = 'Normal'; }
+    
+    return ( $self->{'computed'}{$var}{'value'}, 
+             $status,
              $self->{'description'}{'computed'}{$var}{'type'}, 
              $self->{'description'}{'computed'}{$var}{'unit'}, 
              $self->{'description'}{'computed'}{$var}{'remark'} );
@@ -162,7 +181,7 @@ sub AlarmMssgs
 	
 	foreach my $key (sort keys %{$self->{'digital'}} ) {
 		if ( $self->{'description'}{'digital'}{$key}{'type'} ne "NoAlarm" ) { # We have an alarm, could be SoftAlarm or CriticalAlarm but that doesn't matter.
-			if ( $self->{'digital'}{$key} != 0 ) {
+			if ( $self->{'digital'}{$key}{'value'} != 0 ) {
 				push @alarmlist, ( { source => $self->{'label'}, 
 					                 message => $self->{'description'}{'digital'}{$key}{'info'}, 
 					                 level => $self->{'description'}{'digital'}{$key}{'type'},

@@ -1,6 +1,7 @@
 package DEVICE::coolerAD;
 
 use parent 'DEVICE::generic';
+use DEVICE::deviceHelpers qw(RangeCheck);
 
 use IO::File;
 use Net::SNMP;
@@ -10,6 +11,7 @@ use Try::Tiny;
 #use Data::Dumper qw(Dumper);
 
 # $description is a reference to an anonymous hash table...
+# Note range field analog variables: CriticalAlarm Range[0] SoftAlarm Range[1] OK Range[2] Softalarm Range[3] CriticalAlarm
 $description = {
   'digital' => { 
      11 => { info =>  'liquid pressure probe alarm',                                                type => 'CriticalAlarm', value => ['No alarm', 'Alarm'], remark => '' },
@@ -76,10 +78,10 @@ $description = {
      21 => { info => 'HP fan max speed',                                         unit => '%',     remark => '' },
      22 => { info => 'head pressure setpoint',                                   unit => 'bar',   remark => 'Possibly something else...' },
      29 => { info => 'return air humidiy - abs or rel depending on selection',   unit => '%',     remark => '' },
-     33 => { info => 'inlet water temperature ',                                 unit => 'ºC',    remark => '' },
+     33 => { info => 'inlet water temperature ',                                 unit => 'ºC',    range => [  8, 10, 15, 17 ], remark => '' },
      34 => { info => 'return air humidity ',                                     unit => '%RH',   remark => '' },
-     35 => { info => 'return air temperature ',                                  unit => 'ºC',    remark => 'Hot aisle' },
-     36 => { info => 'supply air temperature ',                                  unit => 'ºC',    remark => 'Room, controlled by set point' },
+     35 => { info => 'return air temperature ',                                  unit => 'ºC',    range => [  5, 10, 42, 45 ], remark => 'Hot aisle' },
+     36 => { info => 'supply air temperature ',                                  unit => 'ºC',    range => [  5, 10, 27, 29 ], remark => 'Room, controlled by set point' },
      37 => { info => 'differential pressure',                                    unit => 'bar',   remark => '' },
      38 => { info => 'dewpoint chiller SP',                                      unit => 'ºC',    remark => '' },
      39 => { info => 'aisle differential pressure ',                             unit => 'Pa',    remark => '' },
@@ -101,7 +103,7 @@ $description = {
      77 => { info => 'analog input 1a minimum value',                            unit => '',      remark => '' },
      78 => { info => 'analog input 1b maximum value',                            unit => '',      remark => '' },
      79 => { info => 'analog input 1b minimum value',                            unit => '',      remark => '' },
-     80 => { info => 'BMS analogue parameter sunchronisation point',             unit => '',      remark => 'Normal value is 464.8', },
+     80 => { info => 'BMS analogue parameter synchronisation point',             unit => '',      remark => 'Normal value is 464.8', },
      81 => { info => 'analog input 2a maximum value',                            unit => '',      remark => '' },
      82 => { info => 'analog input 2a minimum value',                            unit => '',      remark => '' },
      83 => { info => 'analog input 2b maximum value',                            unit => '',      remark => '' },
@@ -327,8 +329,8 @@ sub New
     	    my $oid = $OIDbase.$OIDdigital.$mykey.".0";
     	    my $result = $session->get_request( $oid )
                 or die "SNMP service $oid is not available on the SNMP server $cooler_ip.\n";
-            $self->{'digital'}{$mykey} = $result->{$oid};       
-            # print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}, "\n" );
+            $self->{'digital'}{$mykey}{'value'} = $result->{$oid};       
+            # print ( "Digital key ", $mykey, " has value ", $self->{'digital'}{$mykey}{'value'}, "\n" );
         }
     
         foreach my $mykey ( sort keys %{ $description->{'analog'} } ) 
@@ -336,8 +338,12 @@ sub New
         	my $oid = $OIDbase.$OIDanalog.$mykey.".0";
     	    my $result = $session->get_request( $oid )
                 or die "SNMP service $oid is not available on the SNMP server $cooler_ip.\n";
-            $self->{'analog'}{$mykey} = $result->{$oid} / 10.;       
-        	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}, "\n" );
+            $self->{'analog'}{$mykey}{'value'} = $result->{$oid} / 10.; 
+            if ( exists( $description->{'analog'}{$mykey}{'range'} ) ) { 
+                $self->{'analog'}{$mykey}{'status'} = DEVICE::deviceHelpers::RangeCheck( $self->{'analog'}{$mykey}{'value'}, $description->{'analog'}{$mykey}{'range'} ); 
+            }     
+                  
+        	# print ( "Analog key ", $mykey, " has value ", $self->{'analog'}{$mykey}{'value'}, "\n" );
         }
     
         foreach my $mykey ( sort keys %{ $description->{'integer'} } ) 
@@ -345,8 +351,8 @@ sub New
         	my $oid = $OIDbase.$OIDinteger.$mykey.".0";
     	    my $result = $session->get_request( $oid )
     	        or die "SNMP service $oid is not available on the SNMP server $cooler_ip.\n";
-            $self->{'integer'}{$mykey} = $result->{$oid};       
-        	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}, "\n" );
+            $self->{'integer'}{$mykey}{'value'} = $result->{$oid};       
+        	# print ( "Integer key ", $mykey, " has value ", $self->{'integer'}{$mykey}{'value'}, "\n" );
         }
     
         # Close the connection
@@ -361,11 +367,13 @@ sub New
     $self->{'timestamp'} = strftime( "%Y%m%dT%H%MZ", gmtime );
     
     # Compute the computed variables
-    $self->{'computed'}{1}  = $self->{'analog'}{93} + $self->{'analog'}{184};
-    $self->{'computed'}{2}  = $self->{'analog'}{105};
-    $self->{'computed'}{11} = $self->{'integer'}{189} . '.' . $self->{'integer'}{192} . ' (' . (2000+$self->{'integer'}{186}) . '-' . $self->{'integer'}{184} . '-' . $self->{'integer'}{183} . ')';
-    $self->{'computed'}{12} = $self->{'integer'}{190} . '.' . $self->{'integer'}{193} . ' (' . (2000+$self->{'integer'}{188}) . '-' . $self->{'integer'}{187} . '-' . $self->{'integer'}{185} . ')';
-    $self->{'computed'}{13} = $self->{'integer'}{191} . '.' . $self->{'integer'}{194} . ' (' . (2000+$self->{'integer'}{198}) . '-' . $self->{'integer'}{195} . '-' . $self->{'integer'}{196} . ')';
+    $self->{'computed'}{1}{'value'}   = $self->{'analog'}{93}{'value'} + $self->{'analog'}{184}{'value'};
+    $self->{'computed'}{1}{'status'}  = DEVICE::deviceHelpers::RangeCheck( $self->{'computed'}{1}{'value'}, $description->{'analog'}{36}{'range'} );
+    $self->{'computed'}{2}{'value'}   = $self->{'analog'}{105}{'value'};
+    $self->{'computed'}{2}{'status'}  = DEVICE::deviceHelpers::RangeCheck( $self->{'computed'}{2}{'value'}, $description->{'analog'}{36}{'range'} );
+    $self->{'computed'}{11}{'value'}  = $self->{'integer'}{189}{'value'} . '.' . $self->{'integer'}{192}{'value'} . ' (' . (2000+$self->{'integer'}{186}{'value'}) . '-' . $self->{'integer'}{184}{'value'} . '-' . $self->{'integer'}{183}{'value'} . ')';
+    $self->{'computed'}{12}{'value'}  = $self->{'integer'}{190}{'value'} . '.' . $self->{'integer'}{193}{'value'} . ' (' . (2000+$self->{'integer'}{188}{'value'}) . '-' . $self->{'integer'}{187}{'value'} . '-' . $self->{'integer'}{185}{'value'} . ')';
+    $self->{'computed'}{13}{'value'}  = $self->{'integer'}{191}{'value'} . '.' . $self->{'integer'}{194}{'value'} . ' (' . (2000+$self->{'integer'}{198}{'value'}) . '-' . $self->{'integer'}{195}{'value'} . '-' . $self->{'integer'}{196}{'value'} . ')';
 
     # Finalise the object creation
     bless( $self, $class );
@@ -390,19 +398,19 @@ sub Log
 	# High Supply Temperature alarm, Low Supply Temperature alarm.
 	my @logdata = (
 	  $self->{'timestamp'},
-	  $self->{'analog'}{35}, 
-	  $self->{'analog'}{34}, 
-	  $self->{'analog'}{36}, 
-	  $self->{'analog'}{48}, 
-	  $self->{'analog'}{39}, 
-	  $self->{'analog'}{33}, 
-	  $self->{'analog'}{2}, 
-	  $self->{'analog'}{44}, 
-	  $self->{'digital'}{31}, 
-	  $self->{'digital'}{57}, 
-	  $self->{'digital'}{58}, 
-	  $self->{'digital'}{59}, 
-	  $self->{'digital'}{60}
+	  $self->{'analog'}{35}{'value'}, 
+	  $self->{'analog'}{34}{'value'}, 
+	  $self->{'analog'}{36}{'value'}, 
+	  $self->{'analog'}{48}{'value'}, 
+	  $self->{'analog'}{39}{'value'}, 
+	  $self->{'analog'}{33}{'value'}, 
+	  $self->{'analog'}{2}{'value'}, 
+	  $self->{'analog'}{44}{'value'}, 
+	  $self->{'digital'}{31}{'value'}, 
+	  $self->{'digital'}{57}{'value'}, 
+	  $self->{'digital'}{58}{'value'}, 
+	  $self->{'digital'}{59}{'value'}, 
+	  $self->{'digital'}{60}{'value'}
 	  );
 
 	my $fh = IO::File->new( $filename, '>>' ) or die "Could not open file '$filename'";
@@ -426,8 +434,8 @@ sub Status
     } else {
     	# Search for alarms
 	    foreach my $key (keys %{$self->{'digital'}} ) {
-		    if    ( $self->{'description'}{'digital'}{$key}{'type'} eq "SoftAlarm" )     { $softAlarm     = $softAlarm     || $self->{'digital'}{$key}; }
-		    elsif ( $self->{'description'}{'digital'}{$key}{'type'} eq "CriticalAlarm" ) { $criticalAlarm = $criticalAlarm || $self->{'digital'}{$key}; }
+		    if    ( $self->{'description'}{'digital'}{$key}{'type'} eq "SoftAlarm" )     { $softAlarm     = $softAlarm     || $self->{'digital'}{$key}{'value'}; }
+		    elsif ( $self->{'description'}{'digital'}{$key}{'type'} eq "CriticalAlarm" ) { $criticalAlarm = $criticalAlarm || $self->{'digital'}{$key}{'value'}; }
 	    } # end foreach my $key
 	
 	    # Summarise the result in status

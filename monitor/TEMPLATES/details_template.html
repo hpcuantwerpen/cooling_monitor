@@ -25,6 +25,8 @@
 
 <title>%device% details</title>
 <style>
+:root { --CriticalAlarm-color: #ff0000; --SoftAlarm-color: #ff6600; }
+
 body { font-size: 11pt; font-family: Arial, Helvetica, sans-serif }
 
 table.DataTable              { border-spacing: 0 ; border-collapse: collapse; }
@@ -47,8 +49,8 @@ table.DataTable              { border-spacing: 0 ; border-collapse: collapse; }
                                border: solid black 1px ;  }
 .DataTable td.StatusMessages { text-align: left ; 
                                border: solid black 1px ;  }
-.DataTable span.ConsoleMssgCriticalAlarm { color: Red ; }
-.DataTable span.ConsoleMssgSoftAlarm     { color: Orange ; }
+.DataTable span.ConsoleMssgCriticalAlarm { color: var(--CriticalAlarm-color) ; }
+.DataTable span.ConsoleMssgSoftAlarm     { color: var(--SoftAlarm-color) ; }
 
 div.dataRemark  { position: relative ; }
 span.dataRemark { position: absolute ;
@@ -85,7 +87,7 @@ function refreshContent(  ) {
     }
 	
 	// Fetch the raw data from the server.
-	fetchData.open( "GET", "rawdata.txt", true );
+	fetchData.open( "GET", "rawdata.html", true );
 	fetchData.send( );
 		
 } // End refreshContent
@@ -101,6 +103,10 @@ function refreshFields( ) {
 		var dataID   = "RD_" + dataFields[c1].id;
 		var dataElem = document.getElementById( dataID );
 		dataFields[c1].innerHTML = dataElem.innerHTML;
+		if ( dataElem.style.color != "" ) {
+          dataFields[c1].parentNode.style.color = dataElem.style.color;
+        }
+		
 	}	
 
 	// Set next refresh of the data on the page.
