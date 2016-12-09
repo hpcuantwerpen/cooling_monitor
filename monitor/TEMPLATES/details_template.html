@@ -105,6 +105,8 @@ function refreshFields( ) {
 		dataFields[c1].innerHTML = dataElem.innerHTML;
 		if ( dataElem.style.color != "" ) {
           dataFields[c1].parentNode.style.color = dataElem.style.color;
+        } else {
+          dataFields[c1].parentNode.style.color = '';
         }
 		
 	}	
