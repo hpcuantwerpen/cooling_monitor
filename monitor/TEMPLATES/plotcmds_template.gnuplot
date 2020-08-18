@@ -300,6 +300,7 @@ set output svgfile( "all" )
 set format x "%m/%d"        # Label format for x-axis
 set xlabel "Date"
 plot \
+  datafile(1) using 1:2 with lines lw 1 lt 1 title 'AHU 1', \
   datafile(3) using 1:2 with lines lw 1 lt 3 title 'AHU 3', \
   datafile(4) using 1:2 with lines lw 1 lt 4 title 'AHU 4', \
   datafile(5) using 1:2 with lines lw 1 lt 5 title 'AHU 5'
@@ -335,6 +336,7 @@ set output svgfile( "all" )
 set format x "%m/%d"        # Label format for x-axis
 set xlabel "Date"
 plot \
+  datafile(1) using 1:4 with lines lw 1 lt 1 title 'AHU 1', \
   datafile(3) using 1:4 with lines lw 1 lt 3 title 'AHU 3', \
   datafile(4) using 1:4 with lines lw 1 lt 4 title 'AHU 4', \
   datafile(5) using 1:4 with lines lw 1 lt 5 title 'AHU 5'
@@ -370,6 +372,7 @@ set output svgfile( "all" )
 set format x "%m/%d"        # Label format for x-axis
 set xlabel "Date"
 plot \
+  datafile(1) using 1:6 with lines lw 1 lt 1 title 'AHU 1', \
   datafile(3) using 1:6 with lines lw 1 lt 3 title 'AHU 3', \
   datafile(4) using 1:6 with lines lw 1 lt 4 title 'AHU 4', \
   datafile(5) using 1:6 with lines lw 1 lt 5 title 'AHU 5'
@@ -405,6 +408,7 @@ set output svgfile( "all" )
 set format x "%m/%d"        # Label format for x-axis
 set xlabel "Date"
 plot \
+  datafile(1) using 1:3 with lines lw 1 lt 1 title 'AHU 1', \
   datafile(3) using 1:3 with lines lw 1 lt 3 title 'AHU 3', \
   datafile(4) using 1:3 with lines lw 1 lt 4 title 'AHU 4', \
   datafile(5) using 1:3 with lines lw 1 lt 5 title 'AHU 5'

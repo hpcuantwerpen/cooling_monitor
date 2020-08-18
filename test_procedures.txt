@@ -12,7 +12,7 @@ Main code in monitor
 This code cannot easily be tested from a local desktop since it is not easily
 feasible to create the necessary port forwarding and IP routing on the desktop.
 Hence this code should be tested on the login nodes of the cluster, which is 
-why we developed it in en Eclipse synchronized project even if PTP is not
+why we developed it in an Eclipse synchronized project even if PTP is not
 really designed to work well with Perl.
 
 There is also a test setup on the vsc20001 account, located in
@@ -28,21 +28,21 @@ can only be tested well with a reasonably complete data set. It is currently
 less important for the full logs as the code will nicely start new logs if it
 doesn't find an existing log file for the current data set. 
 * Note that the monitoring does not always run on the same master node of 
-  Hopper. We need to take that into account when fetching the data! The best 
-  is to use the IP address 10.28.236.8.
-* The data files are in /opt/icinga/cooling/data
+  LEibniz. We need to take that into account when fetching the data! The best 
+  is to use the IP address 10.28.229.98.
+* The data files are in /failover/cooling/data
 * Make your life easy and start an ssh agent first with a key that gives access
   to the vsc20001 account.
-* Then you can use the get_testdata.sh script in the project directory to fetch
+* Then you can use the get_testdata_scp.sh script in the project directory to fetch
   the data from the install directory on the cluster master node. Add YYmm to 
   also fetch the full log files for that month.
 
 ssh-agent
 ssh-add ~/.ssh/id_rsa_cluster_UAntwerpen
-scp -i ~/.ssh/id_rsa_cluster_UAntwerpen vsc20001@10.28.236.8:/opt/icinga/cooling/data/cooler01.data data
+scp -i ~/.ssh/id_rsa_cluster_UAntwerpen vsc20001@10.28.229.9:/failover/cooling/data/cooler01.data data
 ./get_testdata.sh 1601
 
-It is easier when testing on the active masterin the vsc20001-account. 
+It is easier when testing on the active master in the vsc20001-account. 
 It is then sufficient to copy recent *.log and *.data files 
 from /opt/icinga/cooling/data to
 /data/antwerpen/200/vsc20001/test-cooling-monitor/data.
@@ -61,7 +61,7 @@ Setting up a web server on the login nodes and proxy on the laptop
 
   All you then need is simply ssh ho-webproxy
 
-* Go to the web page directory, e.g. ${VSC_DATA}/Monitor/V2/www
+* Go to the web page directory, e.g. ${VSC_DATA}/Monitor/VPerl/www
 
 * Start a python SimpleHTTPServer web server on port 8888 (the port chosen with 
   ssh above) via the script start_webserver (the 8888 is hard-coded in that script!)
@@ -80,7 +80,7 @@ URL 10.28.236.13:8888 assuming the SimpleHTTPServer runs on login4 of
 Hopper, port 8888.
 
 Similarly, when testing from the vsc20001-account, login to the active
-master creating a ssh-tunnel (-L 888:localhost:8888), and execute
+master creating a ssh-tunnel (-L 8888:localhost:8888), and execute
 cd ${VSC_DATA}/test-cooling-monitor/www
 ./start_webserver
 to start a test web server. Then point your browser on your local machine
@@ -94,9 +94,8 @@ Running the code
 * You'll need recent versions of perl and gnuplot. We tested with Perl 5.20, 
   and gnuplot 5.0 is the minimum for gnuplot.
   
-module load hopper/2015a
-module load Perl/5.20.1-intel-2015a
-module load gnuplot/5.0.0-intel-2015a
+  On the master nodes of Leibniz we currently use the system Perl and
+  module load calcua/2018b gnuplot/5.2.4-intel-2018b
   
 * Then all you need to do is to go to ${VSC_DATA}/Projects/Monitor/VPerl/monitor
   and run getdata.pl
