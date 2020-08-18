@@ -99,11 +99,11 @@ $cooler01data = DEVICE::coolerAD->New( "10.28.233.50", "cooler01" );
 $cooler02data = DEVICE::coolerAD->New( "10.28.233.51", "cooler02" );
 
 # Routine to fetch the data from the Air Handling Units in the compute room
-# $ahu01data = DEVICE::ahuAD->New( "10.28.243.234", 1, "ahu01" );
-# $ahu02data = DEVICE::ahuAD->New( "10.28.243.234", 2, "ahu02" );
-$ahu03data = DEVICE::ahuAD->New( "10.28.243.234", 3, "ahu03" );
-$ahu04data = DEVICE::ahuAD->New( "10.28.243.234", 4, "ahu04" );
-$ahu05data = DEVICE::ahuAD->New( "10.28.243.234", 5, "ahu05" );
+$ahu01data = DEVICE::ahuAD->New( "10.28.233.53", 1, "ahu01" );
+# $ahu02data = DEVICE::ahuAD->New( "10.28.233.53", 2, "ahu02" );
+$ahu03data = DEVICE::ahuAD->New( "10.28.233.53", 3, "ahu03" );
+$ahu04data = DEVICE::ahuAD->New( "10.28.233.53", 4, "ahu04" );
+$ahu05data = DEVICE::ahuAD->New( "10.28.233.53", 5, "ahu05" );
 
 # Set the time stamp of the data capture,
 $timestampL = strftime( "%c",           localtime );  # Time stamp used for the web page in thelocal time zone.
@@ -115,6 +115,7 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 %devices = (
   11 => $cooler01data,
   12 => $cooler02data,
+  21 => $ahu01data,
   23 => $ahu03data,
   24 => $ahu04data,
   25 => $ahu05data  
@@ -123,6 +124,7 @@ $timestampZ = strftime( "%Y%m%dT%H%MZ", gmtime );     # Time stamp in Zulu time.
 %links = (
   11 => "graphs.html#cooler01",
   12 => "graphs.html#cooler02",
+  21 => "graphs.html#ahu01",
   23 => "graphs.html#ahu03",
   24 => "graphs.html#ahu04",
   25 => "graphs.html#ahu05"
@@ -164,7 +166,7 @@ generate_rawdata( \%devices, $webdir, $alarmMssgsRef );
 #
 $cooler01data->{'valid'}  and $cooler01data->Log( "$datadir/cooler01.data" );
 $cooler02data->{'valid'}  and $cooler02data->Log( "$datadir/cooler02.data" );
-# $ahu01data->{'valid'}     and $ahu01data->Log( "$datadir/ahu01.data" );
+$ahu01data->{'valid'}     and $ahu01data->Log( "$datadir/ahu01.data" );
 # $ahu02data->{'valid'}     and $ahu02data->Log( "$datadir/ahu02.data" );
 $ahu03data->{'valid'}     and $ahu03data->Log( "$datadir/ahu03.data" );
 $ahu04data->{'valid'}     and $ahu04data->Log( "$datadir/ahu04.data" );
@@ -198,7 +200,7 @@ close( $gnuplotPipe );
 #
 $cooler01data->{'valid'}  and $cooler01data->FullLog( $datadir );
 $cooler01data->{'valid'}  and $cooler02data->FullLog( $datadir );
-# $ahu01data->{'valid'}     and $ahu01data->FullLog( $datadir );
+$ahu01data->{'valid'}     and $ahu01data->FullLog( $datadir );
 # $ahu02data->{'valid'}     and $ahu02data->FullLog( $datadir );
 $ahu03data->{'valid'}     and $ahu03data->FullLog( $datadir );
 $ahu04data->{'valid'}     and $ahu04data->FullLog( $datadir );

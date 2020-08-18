@@ -238,7 +238,7 @@ unset object 1; unset object 2; unset object 3; unset object 4; unset object 5
 
 datafile(n) = sprintf( "%s/ahu%02d.data", datadir, n )
 
-AHUS = "3 4 5"
+AHUS = "1 3 4 5"
 
 #########################################################################################################
 #
