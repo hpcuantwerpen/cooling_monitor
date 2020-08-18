@@ -99,11 +99,11 @@ $cooler01data = DEVICE::coolerAD->New( "10.28.233.50", "cooler01" );
 $cooler02data = DEVICE::coolerAD->New( "10.28.233.51", "cooler02" );
 
 # Routine to fetch the data from the Air Handling Units in the compute room
-# $ahu01data = DEVICE::ahuAD->New( "10.28.243.234", 1, "ahu01" );
-# $ahu02data = DEVICE::ahuAD->New( "10.28.243.234", 2, "ahu02" );
-$ahu03data = DEVICE::ahuAD->New( "10.28.243.234", 3, "ahu03" );
-$ahu04data = DEVICE::ahuAD->New( "10.28.243.234", 4, "ahu04" );
-$ahu05data = DEVICE::ahuAD->New( "10.28.243.234", 5, "ahu05" );
+# $ahu01data = DEVICE::ahuAD->New( "10.28.233.53", 1, "ahu01" );
+# $ahu02data = DEVICE::ahuAD->New( "10.28.233.53", 2, "ahu02" );
+$ahu03data = DEVICE::ahuAD->New( "10.28.233.53", 3, "ahu03" );
+$ahu04data = DEVICE::ahuAD->New( "10.28.233.53", 4, "ahu04" );
+$ahu05data = DEVICE::ahuAD->New( "10.28.233.53", 5, "ahu05" );
 
 # Set the time stamp of the data capture,
 $timestampL = strftime( "%c",           localtime );  # Time stamp used for the web page in thelocal time zone.
