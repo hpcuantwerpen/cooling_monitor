@@ -20,16 +20,16 @@ $description = {
     } ,
   'analog' => {
       1 => { info => 'return air humidity ',    unit => '%RH',                              remark => '' },
-      4 => { info => 'return air temperature ', unit => 'ºC',  range => [ 10, 20, 27, 29 ], remark => 'Room, controlled by set point' },
-      5 => { info => 'supply air temperature ', unit => 'ºC',  range => [  5, 10, 23, 25 ], remark => '"Cold aisle"' },
+      4 => { info => 'return air temperature ', unit => 'ºC',  range => [ 10, 20, 27, 29 ], remark => 'Sucked in from room, controlled by set point' },
+      5 => { info => 'supply air temperature ', unit => 'ºC',  range => [  5, 10, 23, 25 ], remark => 'Out of AHU, so "Cold aisle"' },
      12 => { info => 'Temperature set point ',  unit => 'ºC',                               remark => '' },
      35 => { info => 'cooling 0-10vdc ',        unit => '',                                 remark => 'Proportional to water valve, 10=100%?' }
     },
   'integer' => { },
   'computed' => { 
       1 => { info => 'return air humidity (when measurable)',    type => 'D', unit => '%RH', remark => '' },
-      2 => { info => 'return air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => 'Room, controlled by set point' },
-      3 => { info => 'supply air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => '"Cold aisle"' },
+      2 => { info => 'return air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => 'Sucked in from room, controlled by set point' },
+      3 => { info => 'supply air temperature (when measurable)', type => 'D', unit => 'ºC',  remark => 'Out of AHU, so "Cold aisle"' },
     }
   };
 
